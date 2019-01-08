@@ -10,11 +10,12 @@ transformParagraphInt :: String -> (String, String)
 transformParagraphInt [] = ([], [])
 transformParagraphInt (x:xs)
   | isParagraphEnd x = ([], xs)
-  | isStartOfLink x = (link, remainingAfterLink)
+  | isStartOfLink x = case (transformLink xs) of
+      Just (link, remainingAfterLink) -> (link, remainingAfterLink) 
+      Nothing ->  ([], xs)
   | otherwise = (x:paragraph, remaining)
     where
       (paragraph, remaining) = (transformParagraphInt xs)
-      Just (link, remainingAfterLink) = (transformLink xs)
 
 transformParagraph :: String -> (String, String)
 transformParagraph source = ("<p>" ++ (trim paragraph) ++ "</p>", remaining)
