@@ -1,17 +1,9 @@
 module Link where
+import Util
 
 isStartOfLink :: Char -> Bool
 isStartOfLink '[' = True
 isStartOfLink n = False
-
-readToNext :: String -> Char -> Maybe (String, String)
-readToNext [] _        = Nothing 
-readToNext ('\n':xs) _ = Nothing
-readToNext (x:xs) y
-           | x == y    = Just ([], xs)
-           | otherwise = case (readToNext xs y) of
-              Just (part1, remaining) -> Just (x:part1, remaining)
-              Nothing -> Nothing
 
 readLinkUrl  xs = (readToNext xs ']')
 readLinkText xs = (readToNext xs ')')
