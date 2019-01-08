@@ -1,6 +1,5 @@
 import System.IO.Error (tryIOError)
-import Header
-import Paragraph
+import Transform
 
 input :: IO String
 input = do
@@ -11,17 +10,6 @@ input = do
       return (c:remain)
     Left(_) -> do
       return []
-
-transform :: String -> String
-transform [] = []
-
-transform ('#':xs) = transformed ++ (transform rest)
-  where
-    (transformed, rest) = (transformHeader ('#':xs))
-
-transform (x:xs) = paragraph ++ (transform rest)
-  where
-    (paragraph, rest) = (transformParagraph (x:xs)) 
 
 main = do
   source <- input
