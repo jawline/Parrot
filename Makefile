@@ -5,7 +5,7 @@ build:
 	ghc --make -isrc -outputdir ./bin/ -o ./bin/main src/main.hs
 
 test: build
-	./bin/main < test/example.md
+	./bin/main
 
 clean:
 	rm -rf ./bin/

@@ -1,10 +1,11 @@
-import System.IO.Error (tryIOError)
 import Transform
 import System.Directory
 import Control.Monad 
-import Control.Monad.Trans.Maybe 
-import Control.Monad.Trans.Class 
 import Data.List 
+import Util
+
+inputDirectory = "./sources/"
+outputDirectory = "./bin/" 
 
 getAllMarkdown root = do
   all <- listDirectory root
@@ -12,28 +13,24 @@ getAllMarkdown root = do
   let mapped = map (\x -> root ++ x) filtered
   return mapped
 
-input :: IO String
-input = do
-  c <- tryIOError getChar
-  case c of
-    Right(c) -> do
-      remain <- input
-      return (c:remain)
-    Left(_) -> do
-      return []
+rewriteSuffix :: String -> String
+rewriteSuffix source = replaceInString source ".md" ".html"
 
-transformFile file = do
-  file <- readFile file 
-  return (transform file)
+transformFile filename = do
+  file <- readFile filename
+  let outfile = (replaceInString (rewriteSuffix filename) inputDirectory outputDirectory)
+  writeFile outfile (transform file)
 
-printIO :: IO String -> IO ()
-printIO ip = do
-  str <- ip
-  print str
+setupDirectory output = do
+  exists <- (doesDirectoryExist output)
+  when (exists == True) $ removeDirectoryRecursive output
+  createDirectory output
 
-main = do all <- (getAllMarkdown "./test/")
-          transformed <- mapM (transformFile) all
-          mapM_ (print) transformed
+main = do
+  setup <- setupDirectory outputDirectory 
+  all <- (getAllMarkdown inputDirectory)
+  transformed <- mapM (transformFile) all
+  mapM_ (print) transformed
 
 --
 -- main = do

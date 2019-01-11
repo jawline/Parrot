@@ -1,5 +1,25 @@
 module Util where
 import Data.Char
+import System.IO.Error (tryIOError)
+
+input :: IO String
+input = do
+  c <- tryIOError getChar
+  case c of
+    Right(c) -> do
+      remain <- input
+      return (c:remain)
+    Left(_) -> 
+      return []
+
+matches :: String -> String -> Bool
+matches target string = take (length target) string == target
+
+replaceInString :: String -> String -> String -> String
+replaceInString [] _ _ = []
+replaceInString (x:xs) target with
+  | matches target (x:xs) = with ++ (drop (length target) (x:xs))
+  | otherwise = x:(replaceInString xs target with)
 
 readToNext :: String -> Char -> Maybe (String, String)
 readToNext [] _        = Nothing 
