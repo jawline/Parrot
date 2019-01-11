@@ -4,8 +4,13 @@ import Control.Monad
 import Data.List 
 import Util
 
+articlesDirectory = "articles/"
+
 inputDirectory = "./sources/"
-outputDirectory = "./bin/" 
+inputArticles = inputDirectory ++ articlesDirectory
+
+outputDirectory = "./bin/"
+outputArticles = outputDirectory ++ articlesDirectory
 
 getAllMarkdown root = do
   all <- listDirectory root
@@ -27,10 +32,25 @@ setupDirectory output = do
   createDirectory output
 
 main = do
-  setup <- setupDirectory outputDirectory 
-  all <- (getAllMarkdown inputDirectory)
-  transformed <- mapM (transformFile) all
-  mapM_ (print) transformed
+
+  putStrLn "[+] Setting Up Output"
+  _ <- setupDirectory outputDirectory
+  _ <- setupDirectory outputArticles
+
+  putStrLn "[+] Reading Templates"
+
+  putStrLn "[+] Copying Statics"
+
+  putStrLn "[+] Generating Index"
+
+  putStrLn "[+] Converting Articles"
+
+  all <- (getAllMarkdown inputArticles)
+  mapM (transformFile) all
+
+  putStrLn "[+] Generating Lists"
+
+  putStrLn "[+] Done"
 
 --
 -- main = do
