@@ -27,8 +27,11 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source ".md" ".html"
 
+extractIntroduction source = untilString "!=!=! Intro: End" (fromString "!=!=! Intro: Start" source)
+
 transformArticle template filename = do
   file <- readFile filename
+  putStrLn (transform (extractIntroduction file)) 
   let transformedArticle = replaceInString template "{{{ARTICLE_CONTENT}}}" (transform file)
   let outfile = (replaceInString (rewriteSuffix filename) inputDirectory outputDirectory)
   writeFile outfile transformedArticle
