@@ -68,3 +68,14 @@ untilString target xs = reverse (fromString (reverse target) (reverse xs))
 
 findLine :: String -> String -> String
 findLine target source = endOfLine (fromString target source)
+
+unique [] = []
+unique (x:xs) 
+  | elem x (unique xs) = unique xs
+  | otherwise = x:(unique xs)
+
+titleToFilename [] = ""
+titleToFilename (' ':xs) = '_':(titleToFilename xs)
+titleToFilename (x:xs) 
+  | (isLetter x) || (isNumber x) = x:(titleToFilename xs)
+  | otherwise = titleToFilename xs

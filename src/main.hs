@@ -6,16 +6,20 @@ import Util
 import CopyDirectory
 
 articlesDirectory = "articles/"
+listsDirectory = "list/"
 
 inputDirectory = "./sources/"
 inputArticles = inputDirectory ++ articlesDirectory
 inputTemplates = inputDirectory ++ "/templates/"
 inputTemplateArticle = inputTemplates ++ "article.html"
+inputTemplateList = inputTemplates ++ "list.html"
+inputTemplateListItem = inputTemplates ++ "list_item.html"
 inputTemplateIndex = inputTemplates ++ "index.html"
 inputStatic = inputDirectory ++ "static/"
 
 outputDirectory = "./bin/"
 outputArticles = outputDirectory ++ articlesDirectory
+outputLists = outputDirectory ++ listsDirectory
 outputIndex = outputDirectory ++ "index.html"
 
 getAllMarkdown root = do
@@ -74,7 +78,7 @@ transformArticle template filename = do
   let withTime = replaceInString withTitle "{{{ARTICLE_TIME}}}" articleDate
   let withTags = replaceInString withTime "{{{ARTICLE_TAGS}}}" (mergeTags articleTags)
   let transformedArticle = withTags
-  let outfile = (replaceInString (rewriteSuffix filename) inputDirectory outputDirectory)
+  let outfile = outputArticles ++ titleToFilename articleTitle ++ ".html" 
   writeFile outfile transformedArticle
   return (articleTitle, articleDate, extractIntroduction source, extractTags source)
 
@@ -88,15 +92,35 @@ date (_, x, _, _) = x
 intro (_, _, x, _) = x
 tags (_, _, _, x) = x
 
+formatListItem :: String -> (String, String, String, [String]) -> String
+formatListItem template item = withTargets 
+  where
+    withTitle = replaceInString template "{{{LI_NAME}}}" (title item)
+    withIntro = replaceInString withTitle "{{{LI_DESCRIPTION}}}" (intro item)
+    withDate = replaceInString withIntro "{{{LI_DATE}}}" (date item)
+    withTags = replaceInString withDate "{{{LI_TAGS}}}" (mergeTags (tags item))
+    withTargets = replaceInString withTags "{{{LI_TARGET}}}" ("/" ++ articlesDirectory ++ (titleToFilename (title item)) ++ ".html")
+
+writeList :: String -> [(String, String, String, [String])] -> String -> String -> IO ()
+writeList listname listitems template itemTemplate = do
+  writeFile (outputLists ++ listname ++ ".html") withContent 
+  where
+    withTitle = replaceInString template "{{{LIST_TITLE}}}" listname
+    formattedItems = (map (formatListItem itemTemplate) listitems)
+    withContent = replaceInString withTitle "{{{LIST_CONTENT}}}" (foldr (++) "" formattedItems)
+
 main = do
 
   putStrLn "[+] Setting Up Output"
   _ <- setupDirectory outputDirectory
   _ <- setupDirectory outputArticles
+  _ <- setupDirectory outputLists
 
   putStrLn "[+] Reading Templates"
   indexTemplate <- readFile inputTemplateIndex
   articleTemplate <- readFile inputTemplateArticle
+  listTemplate <- readFile inputTemplateList
+  listItemTemplate <- readFile inputTemplateListItem
 
   putStrLn "[+] Copying Statics"
   copyDirectory inputStatic outputDirectory
@@ -110,5 +134,7 @@ main = do
   articleInfo <- mapM (transformArticle articleTemplate) all
 
   putStrLn "[+] Generating Lists"
+  let listNames = foldr (\l1 r1 -> (tags l1) ++ r1) [] articleInfo
+  _ <- mapM_ (\x -> writeList x (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) listNames
 
   putStrLn "[+] Done"
