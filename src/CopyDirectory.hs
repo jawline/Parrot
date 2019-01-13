@@ -17,8 +17,3 @@ copyDirectory src dst = do
     if isDirectory
       then copyDirectory srcPath dstPath
       else copyFile srcPath dstPath
-  where
-    doesFileOrDirectoryExist x = orM [doesDirectoryExist x, doesFileExist x]
-    orM xs = or <$> sequence xs
-    whenM s r = s >>= flip when r
-
