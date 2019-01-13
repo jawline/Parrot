@@ -3,6 +3,7 @@ import System.Directory
 import Control.Monad 
 import Data.List 
 import Util
+import CopyDirectory
 
 articlesDirectory = "articles/"
 
@@ -11,6 +12,7 @@ inputArticles = inputDirectory ++ articlesDirectory
 inputTemplates = inputDirectory ++ "/templates/"
 inputTemplateArticle = inputTemplates ++ "article.html"
 inputTemplateIndex = inputTemplates ++ "index.html"
+inputStatic = inputDirectory ++ "static/"
 
 outputDirectory = "./bin/"
 outputArticles = outputDirectory ++ articlesDirectory
@@ -47,6 +49,7 @@ main = do
   articleTemplate <- readFile inputTemplateArticle
 
   putStrLn "[+] Copying Statics"
+  copyDirectory inputStatic outputDirectory
 
   putStrLn "[+] Generating Index"
   _ <- writeFile outputIndex indexTemplate
@@ -59,8 +62,3 @@ main = do
   putStrLn "[+] Generating Lists"
 
   putStrLn "[+] Done"
-
---
--- main = do
---  source <- input
---  putStrLn (transform source)
