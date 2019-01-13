@@ -9,5 +9,6 @@ transform xs =
   case (trimLeft xs) of
     ('#':xs) -> header ++ "\n" ++ (transform rest)
       where (header, rest) = (transformHeader ('#':xs))
+    ('!':'=':'!':'=':'!':xs) -> (transform (skipLine xs)) 
     xs -> paragraph ++ "\n" ++ (transform rest)
       where (paragraph, rest) = (transformParagraph xs)

@@ -46,3 +46,17 @@ trimRight xs = reverse (trimLeft (reverse xs))
 
 trim :: String -> String
 trim xs = trimRight (trimLeft xs)
+
+skipLine :: String -> String
+skipLine [] = []
+skipLine ('\n':xs) = xs
+skipLine (x:xs) = skipLine xs
+
+fromString :: String -> String -> String
+fromString target (x:xs) =
+  case matches target (x:xs) of
+    True -> (x:xs)
+    False -> fromString target xs
+
+untilString :: String -> String -> String
+untilString target xs = reverse (fromString (reverse target) (reverse xs))
