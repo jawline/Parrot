@@ -12,6 +12,11 @@ input = do
     Left(_) -> 
       return []
 
+endOfLine :: String -> String
+endOfLine [] = []
+endOfLine ('\n':xs) = []
+endOfLine (x:xs) = x:(endOfLine xs)
+
 matches :: String -> String -> Bool
 matches target string = take (length target) string == target
 
@@ -60,3 +65,6 @@ fromString target (x:xs) =
 
 untilString :: String -> String -> String
 untilString target xs = reverse (fromString (reverse target) (reverse xs))
+
+findLine :: String -> String -> String
+findLine target source = endOfLine (fromString target source)
