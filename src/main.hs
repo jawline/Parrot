@@ -8,9 +8,13 @@ articlesDirectory = "articles/"
 
 inputDirectory = "./sources/"
 inputArticles = inputDirectory ++ articlesDirectory
+inputTemplates = inputDirectory ++ "/templates/"
+inputTemplateArticle = inputTemplates ++ "article.html"
+inputTemplateIndex = inputTemplates ++ "index.html"
 
 outputDirectory = "./bin/"
 outputArticles = outputDirectory ++ articlesDirectory
+outputIndex = outputDirectory ++ "index.html"
 
 getAllMarkdown root = do
   all <- listDirectory root
@@ -21,10 +25,11 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source ".md" ".html"
 
-transformFile filename = do
+transformArticle template filename = do
   file <- readFile filename
+  let transformedArticle = replaceInString template "{{{ARTICLE_CONTENT}}}" (transform file)
   let outfile = (replaceInString (rewriteSuffix filename) inputDirectory outputDirectory)
-  writeFile outfile (transform file)
+  writeFile outfile transformedArticle
 
 setupDirectory output = do
   exists <- (doesDirectoryExist output)
@@ -38,15 +43,18 @@ main = do
   _ <- setupDirectory outputArticles
 
   putStrLn "[+] Reading Templates"
+  indexTemplate <- readFile inputTemplateIndex
+  articleTemplate <- readFile inputTemplateArticle
 
   putStrLn "[+] Copying Statics"
 
   putStrLn "[+] Generating Index"
+  _ <- writeFile outputIndex indexTemplate
 
   putStrLn "[+] Converting Articles"
 
   all <- (getAllMarkdown inputArticles)
-  mapM (transformFile) all
+  mapM (transformArticle articleTemplate) all
 
   putStrLn "[+] Generating Lists"
 
