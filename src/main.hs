@@ -27,14 +27,20 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source ".md" ".html"
 
-extractIntroduction source = untilString "!=!=! Intro: End" (fromString "!=!=! Intro: Start" source)
+extractIntroduction source = trim intro
+  where
+    comment = "!=!=!"
+    start = comment ++ " Intro: Start"
+    end = comment ++ " Intro: End"
+    portion = untilString "!=!=! Intro: End" (fromString "!=!=! Intro: Start" source)
+    intro = drop (length start) (reverse (drop (length end) (reverse portion))) 
 
 transformArticle template filename = do
-  file <- readFile filename
-  putStrLn (transform (extractIntroduction file)) 
-  let transformedArticle = replaceInString template "{{{ARTICLE_CONTENT}}}" (transform file)
+  source <- readFile filename 
+  let transformedArticle = replaceInString template "{{{ARTICLE_CONTENT}}}" (transform source)
   let outfile = (replaceInString (rewriteSuffix filename) inputDirectory outputDirectory)
   writeFile outfile transformedArticle
+  return (extractIntroduction source)
 
 setupDirectory output = do
   exists <- (doesDirectoryExist output)
@@ -60,7 +66,9 @@ main = do
   putStrLn "[+] Converting Articles"
 
   all <- (getAllMarkdown inputArticles)
-  mapM (transformArticle articleTemplate) all
+  articleInfo <- mapM (transformArticle articleTemplate) all
+
+  mapM print articleInfo
 
   putStrLn "[+] Generating Lists"
 
