@@ -112,20 +112,24 @@ writeList listname listitems template itemTemplate = do
 main = do
 
   putStrLn "[+] Setting Up Output"
+
   _ <- setupDirectory outputDirectory
   _ <- setupDirectory outputArticles
   _ <- setupDirectory outputLists
 
   putStrLn "[+] Reading Templates"
+
   indexTemplate <- readFile inputTemplateIndex
   articleTemplate <- readFile inputTemplateArticle
   listTemplate <- readFile inputTemplateList
   listItemTemplate <- readFile inputTemplateListItem
 
   putStrLn "[+] Copying Statics"
+
   copyDirectory inputStatic outputDirectory
 
   putStrLn "[+] Generating Index"
+
   _ <- writeFile outputIndex indexTemplate
 
   putStrLn "[+] Converting Articles"
@@ -134,6 +138,7 @@ main = do
   articleInfo <- mapM (transformArticle articleTemplate) all
 
   putStrLn "[+] Generating Lists"
+
   let listNames = foldr (\l1 r1 -> (tags l1) ++ r1) [] articleInfo
   _ <- mapM_ (\x -> writeList x (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) listNames
 
