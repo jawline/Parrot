@@ -100,7 +100,7 @@ formatListItem template item = withTargets
     withIntro = replaceInString withTitle "{{{LI_DESCRIPTION}}}" (intro item)
     withDate = replaceInString withIntro "{{{LI_DATE}}}" (date item)
     withTags = replaceInString withDate "{{{LI_TAGS}}}" (mergeTags (tags item))
-    withTargets = replaceInString withTags "{{{LI_TARGET}}}" ("/" ++ articlesDirectory ++ (titleToFilename (title item)) ++ ".html")
+    withTargets = replaceInString withTags "{{{LI_TARGET}}}" ("/" ++ articlesDirectory ++ (titleToFilename (title item)))
 
 writeList :: String -> [(String, String, String, [String])] -> String -> String -> IO ()
 writeList listname listitems template itemTemplate = do

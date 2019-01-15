@@ -1,6 +1,6 @@
 !=!=! Title: Example
 !=!=! Created: 5823818
-!=!=! Tags: Simple, List1, Nav_1
+!=!=! Tags: Projects, Research, Tutorials
 !=!=! Intro: Start
 
 This is the start of my example markdown file. It uses a semi-custom syntax for date generation.
