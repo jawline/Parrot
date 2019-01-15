@@ -13,6 +13,7 @@ inputArticles = inputDirectory ++ articlesDirectory
 inputTemplates = inputDirectory ++ "/templates/"
 inputTemplateArticle = inputTemplates ++ "article.html"
 inputTemplateList = inputTemplates ++ "list.html"
+inputTemplateNav = inputTemplates ++ "nav.html"
 inputTemplateListItem = inputTemplates ++ "list_item.html"
 inputTemplateIndex = inputTemplates ++ "index.html"
 inputStatic = inputDirectory ++ "static/"
@@ -109,6 +110,10 @@ writeList listname listitems template itemTemplate = do
     formattedItems = (map (formatListItem itemTemplate) listitems)
     withContent = replaceInString withTitle "{{{LIST_CONTENT}}}" (foldr (++) "" formattedItems)
 
+templateWithNav navTemplate filename = do
+  template <- readFile filename
+  return (replaceInString template "{{{NAV_BAR_CONTENT}}}" navTemplate)
+
 main = do
 
   putStrLn "[+] Setting Up Output"
@@ -119,9 +124,10 @@ main = do
 
   putStrLn "[+] Reading Templates"
 
-  indexTemplate <- readFile inputTemplateIndex
-  articleTemplate <- readFile inputTemplateArticle
-  listTemplate <- readFile inputTemplateList
+  navTemplate <- readFile inputTemplateNav
+  indexTemplate <- templateWithNav navTemplate inputTemplateIndex
+  articleTemplate <- templateWithNav navTemplate inputTemplateArticle
+  listTemplate <- templateWithNav navTemplate inputTemplateList
   listItemTemplate <- readFile inputTemplateListItem
 
   putStrLn "[+] Copying Statics"
