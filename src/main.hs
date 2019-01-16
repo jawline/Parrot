@@ -147,7 +147,7 @@ main = do
 
   putStrLn "[+] Generating Lists"
 
-  let listNames = foldr (\l1 r1 -> (tags l1) ++ r1) [] articleInfo
+  let listNames = unique (foldr (\l1 r1 -> (tags l1) ++ r1) [] articleInfo)
   _ <- mapM_ (\(i, x) -> writeList (length listNames) (i, x) (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
 
   putStrLn "[+] Done"

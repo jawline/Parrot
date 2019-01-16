@@ -70,9 +70,8 @@ findLine :: String -> String -> String
 findLine target source = endOfLine (fromString target source)
 
 unique [] = []
-unique (x:xs) 
-  | elem x (unique xs) = unique xs
-  | otherwise = x:(unique xs)
+unique (x:xs) = if elem x r then r else x:r
+  where r = unique xs 
 
 titleToFilename [] = ""
 titleToFilename (' ':xs) = '_':(titleToFilename xs)
