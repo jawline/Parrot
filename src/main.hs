@@ -67,8 +67,9 @@ mergeTag current next = if (length current) == 0 then next else current ++ ", " 
 
 mergeTags tags = foldr mergeTag "" tags
 
-transformArticle :: String -> FilePath -> IO (String, String, String, [String])
-transformArticle template filename = do
+transformArticle :: String -> Int -> (Int, FilePath) -> IO (String, String, String, [String])
+transformArticle template total (index, filename) = do
+  putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
   source <- readFile filename
   let articleTitle = (extractTitle source) 
   let articleDate = (extractDate source)
@@ -102,13 +103,14 @@ formatListItem template item = withTargets
     withTags = replaceInString withDate "{{{LI_TAGS}}}" (mergeTags (tags item))
     withTargets = replaceInString withTags "{{{LI_TARGET}}}" ("/" ++ articlesDirectory ++ (titleToFilename (title item)))
 
-writeList :: String -> [(String, String, String, [String])] -> String -> String -> IO ()
-writeList listname listitems template itemTemplate = do
+writeList :: Int -> (Int, String) -> [(String, String, String, [String])] -> String -> String -> IO ()
+writeList total (index, listname) listitems template itemTemplate = do
+  putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
   writeFile (outputLists ++ listname ++ ".html") withContent 
-  where
-    withTitle = replaceInString template "{{{LIST_TITLE}}}" listname
-    formattedItems = (map (formatListItem itemTemplate) listitems)
-    withContent = replaceInString withTitle "{{{LIST_CONTENT}}}" (foldr (++) "" formattedItems)
+    where
+      withTitle = replaceInString template "{{{LIST_TITLE}}}" listname
+      formattedItems = (map (formatListItem itemTemplate) listitems)
+      withContent = replaceInString withTitle "{{{LIST_CONTENT}}}" (foldr (++) "" formattedItems)
 
 templateWithNav navTemplate filename = do
   template <- readFile filename
@@ -141,11 +143,11 @@ main = do
   putStrLn "[+] Converting Articles"
 
   all <- (getAllMarkdown inputArticles)
-  articleInfo <- mapM (transformArticle articleTemplate) all
+  articleInfo <- mapM (transformArticle articleTemplate (length all)) (indexed all)
 
   putStrLn "[+] Generating Lists"
 
   let listNames = foldr (\l1 r1 -> (tags l1) ++ r1) [] articleInfo
-  _ <- mapM_ (\x -> writeList x (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) listNames
+  _ <- mapM_ (\(i, x) -> writeList (length listNames) (i, x) (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
 
   putStrLn "[+] Done"

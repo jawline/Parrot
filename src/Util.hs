@@ -79,3 +79,11 @@ titleToFilename (' ':xs) = '_':(titleToFilename xs)
 titleToFilename (x:xs) 
   | (isLetter x) || (isNumber x) = x:(titleToFilename xs)
   | otherwise = titleToFilename xs
+
+indexedReverse [] = []
+indexedReverse (x:[]) = [(0, x)]
+indexedReverse (x:xs) = (l + 1, x):(indexedReverse xs)
+  where
+    ((l, _):_) = indexedReverse xs
+
+indexed xs = reverse (indexedReverse (reverse xs))
