@@ -45,6 +45,6 @@ ExpoSE avoids the issue of interpreter instrumentation by using the Jalangi2 fra
 
 ### Tutorials
 
-* [A Quick Start Guide to ExpoSE](/articles/expose_quickstart)
-* [Logging in ExpoSE](/articles/expose_high_fidelity_logs)
+* [A Quick Start Guide to ExpoSE](/articles/ExpoSE_A_Quick_Start_Guide)
+* [Logging in ExpoSE](/articles/A_Short_Tutorial_on_Logging_in_ExpoSE)
 

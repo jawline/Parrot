@@ -1,4 +1,4 @@
-!=!=! Title: Scribble - Fully interpreted, garbage collected, programming language
+!=!=! Title: Scribble - Interpreted, Garbage Collected, Programming Language
 !=!=! Tags: Projects
 !=!=! Created: 1533825900
 
