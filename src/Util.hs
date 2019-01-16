@@ -26,11 +26,10 @@ replaceInString (x:xs) target with
   | matches target (x:xs) = with ++ (drop (length target) (x:xs))
   | otherwise = x:(replaceInString xs target with)
 
-readToNext :: String -> Char -> Maybe (String, String)
-readToNext [] _        = Nothing 
-readToNext ('\n':xs) _ = Nothing
+readToNext :: String -> (Char -> Bool) -> Maybe (String, String)
+readToNext [] _        = Nothing
 readToNext (x:xs) y
-           | x == y    = Just ([], xs)
+           | y(x  )    = Just ([], xs)
            | otherwise = case (readToNext xs y) of
               Just (part1, remaining) -> Just (x:part1, remaining)
               Nothing -> Nothing

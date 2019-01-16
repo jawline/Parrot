@@ -5,7 +5,7 @@ isInlineCodeStart :: Char -> Bool
 isInlineCodeStart c = c == '`'
 
 transformInlineCodeInt :: String -> Maybe (String, String)
-transformInlineCodeInt xs = (readToNext xs '`') 
+transformInlineCodeInt xs = (readToNext xs (\x -> x == '`')) 
 
 transformInlineCode :: String -> Maybe (String, String)
 transformInlineCode xs =
