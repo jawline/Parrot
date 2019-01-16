@@ -11,6 +11,7 @@ transform xs =
     ('#':xs) -> header ++ "\n" ++ (transform rest)
       where (header, rest) = (transformHeader ('#':xs))
     ('!':'=':'!':'=':'!':xs) -> (transform (skipLine xs)) 
+    ('`':'`':'`':xs) -> transformInlineCode xs
     ('*':xs) -> list ++ "\n" ++ (transform rest)
       where (list, rest) = (transformList ('*':xs))
     xs -> paragraph ++ "\n" ++ (transform rest)
