@@ -5,6 +5,15 @@ import Data.List
 import Util
 import CopyDirectory
 
+import Data.Time.Clock.POSIX
+import Data.Time.Clock
+import Data.Time.Format
+
+millisToUTC :: String -> String
+millisToUTC r = formatTime defaultTimeLocale "%d-%m-%Y" timestamp 
+  where t = round ((read r :: Float))
+        timestamp = posixSecondsToUTCTime $ (fromInteger t)
+
 articlesDirectory = "articles/"
 listsDirectory = "list/"
 
@@ -38,7 +47,7 @@ extractTitle source = trim (drop (length prelude) (findLine prelude source))
     prelude = "!=!=! Title:"
 
 extractDate :: String -> String
-extractDate source = trim (drop (length prelude) (findLine prelude source))
+extractDate source = millisToUTC (trim (drop (length prelude) (findLine prelude source)))
   where
     prelude = "!=!=! Created:"
 
@@ -63,7 +72,7 @@ extractIntroduction source = trim intro
     intro = drop (length start) (reverse (drop (length end) (reverse portion))) 
 
 mergeTag :: String -> String -> String
-mergeTag current next = if (length current) == 0 then next else current ++ ", " ++ next
+mergeTag next current = if (length current) == 0 then next else current ++ ", " ++ next
 
 mergeTags tags = foldr mergeTag "" tags
 
