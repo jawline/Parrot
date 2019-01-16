@@ -6,7 +6,7 @@ build:
 
 test: build
 	./bin/main
-	(cd bin; python -m SimpleHTTPServer)
+	(cd bin; python ../scripts/test_server.py)
 
 clean:
 	rm -rf ./bin/
