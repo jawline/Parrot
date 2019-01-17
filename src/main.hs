@@ -5,18 +5,20 @@ import Data.List
 import Util
 import CopyDirectory
 
+import Data.List
+import Data.Function
 import Data.Time.Clock.POSIX
 import Data.Time.Clock
 import Data.Time.Format
 
-type ArticleInfo = (String, UTCTime, String, [String])
+type ArticleInfo = (String, Float, String, [String])
 
-showTime :: UTCTime -> String
-showTime timestamp = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
+showTime :: Float -> String
+showTime timestamp = formatTime defaultTimeLocale "%d-%m-%Y" (millisToUTC timestamp)
 
-millisToUTC :: String -> UTCTime
+millisToUTC :: Float -> UTCTime
 millisToUTC r = timestamp 
-  where t = round ((read r :: Float))
+  where t = round r
         timestamp = posixSecondsToUTCTime $ (fromInteger t)
 
 articlesDirectory = "articles/"
@@ -51,8 +53,8 @@ extractTitle source = trim (drop (length prelude) (findLine prelude source))
   where
     prelude = "!=!=! Title:"
 
-extractDate :: String -> UTCTime
-extractDate source = millisToUTC (trim (drop (length prelude) (findLine prelude source)))
+extractDate :: String -> Float
+extractDate source = read (trim (drop (length prelude) (findLine prelude source))) :: Float
   where
     prelude = "!=!=! Created:"
 
@@ -157,7 +159,10 @@ main = do
   putStrLn "[+] Converting Articles"
 
   all <- (getAllMarkdown inputArticles)
-  articleInfo <- mapM (transformArticle articleTemplate (length all)) (indexed all)
+  articleInfoUnsorted <- mapM (transformArticle articleTemplate (length all)) (indexed all)
+  let articleInfo = sortOn date articleInfo
+
+  _ <- mapM_ (\x -> putStrLn (show (date x))) articleInfo
 
   putStrLn "[+] Generating Lists"
 
