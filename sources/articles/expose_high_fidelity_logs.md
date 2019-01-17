@@ -17,11 +17,11 @@ With test-case logging enabled the concurrent execution of test-cases can add a 
 
 ```EXPOSE_MAX_CONCURRENT=1 ./expoSE ...```
 
-ExpoSE supports 4 logging modes, set through the <code>EXPOSE_LOG_LEVEL</code> environment variable.
+ExpoSE supports 4 logging modes, set through the `EXPOSE_LOG_LEVEL` environment variable.
 
-* Level <code>0</code> is no logging at all, and will just include the original programs stdout.
-* Level <code>1</code> is standard ExpoSE logging and includes primitive runtime information.
-* Levels <code>2</code> and <code>3</code> are high fidelity logging modes, and include large amounts of debugging information. Executing ExpoSE with these modes has a dramatic impact on performance and is not recommended unless you are debugging the interpreter itself.
+* Level `0` is no logging at all, and will just include the original programs stdout.
+* Level `1` is standard ExpoSE logging and includes primitive runtime information.
+* Levels `2` and `3` are high fidelity logging modes, and include large amounts of debugging information. Executing ExpoSE with these modes has a dramatic impact on performance and is not recommended unless you are debugging the interpreter itself.
 
 The `EXPOSE_LOG_LEVEL` variable can be set using the following command:
 
@@ -47,4 +47,4 @@ Prepare a log for issue submission:
 
 ```REBUILD=1 EXPOSE_MAX_CONCURRENT=1 EXPOSE_LOG_LEVEL=3 EXPOSE_PRINT_PATHS=1 ./expoSE ...```
 
-Note that in each of these examples we limit the number of concurrent tests executing using the <code>EXPOSE_MAX_CONCURRENT</code> environment variable. If this restriction is removed performance will increase at the cost of noise in the output.
+Note that in each of these examples we limit the number of concurrent tests executing using the `EXPOSE_MAX_CONCURRENT` environment variable. If this restriction is removed performance will increase at the cost of noise in the output.

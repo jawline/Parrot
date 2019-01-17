@@ -5,8 +5,8 @@ isStartOfLink :: Char -> Bool
 isStartOfLink '[' = True
 isStartOfLink n = False
 
-readLinkText  xs = (readToNext xs (\x -> x == ']'))
-readLinkUrl xs = (readToNext xs (\x -> x == ')'))
+readLinkText  xs = (readToNext xs (\(x:_) -> x == ']'))
+readLinkUrl xs = (readToNext xs (\(x:_) -> x == ')'))
 
 transformLink :: String -> Maybe (String, String)
 transformLink xs = case (readLinkText xs) of

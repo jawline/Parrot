@@ -23,16 +23,16 @@ matches target string = take (length target) string == target
 replaceInString :: String -> String -> String -> String
 replaceInString [] _ _ = []
 replaceInString (x:xs) target with
-  | matches target (x:xs) = with ++ (drop (length target) (x:xs))
+  | matches target (x:xs) = replaceInString (with ++ (drop (length target) (x:xs))) target with
   | otherwise = x:(replaceInString xs target with)
 
-readToNext :: String -> (Char -> Bool) -> Maybe (String, String)
+readToNext :: String -> (String -> Bool) -> Maybe (String, String)
 readToNext [] _        = Nothing
-readToNext (x:xs) y
-           | y(x  )    = Just ([], xs)
-           | otherwise = case (readToNext xs y) of
-              Just (part1, remaining) -> Just (x:part1, remaining)
-              Nothing -> Nothing
+readToNext (x:xs) y = if y(x:xs)
+  then Just ([], xs)
+  else case (readToNext xs y) of
+    Just (part1, remaining) -> Just (x:part1, remaining)
+    Nothing -> Nothing
 
 trimWhiteLine :: String -> String
 trimWhiteLine [] = []

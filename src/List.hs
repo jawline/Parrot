@@ -8,7 +8,7 @@ transformListInner xs = xr
         (list, remaining) = transformSpan xs
 
 transformListLine :: String -> (String, String)
-transformListLine xs = case readToNext xs (\x -> x == '\n') of
+transformListLine xs = case readToNext xs (\(x:_) -> x == '\n') of
   Just (list, remaining) -> ("<li>" ++ (transformListInner list) ++ "</li>", remaining)
   Nothing -> ([], xs)
 
