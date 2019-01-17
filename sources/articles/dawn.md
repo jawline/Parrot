@@ -8,4 +8,6 @@ Dawn is a x86 based operating system (OS) with a process scheduler, virtual memo
 
 In 2014 I began working on the project again, refactoring the older code so that it complies with more modern programming standards and adding new features. I am continuing to work on the project, along with one other developer, to improve the existing code and experiment with potential kernel and OS designs.
 
-The project is now available on github <a href="http://www.github.com/jawline/Dawn/">here</a>.
+### Resources
+
+* [Source Code](http://www.github.com/jawline/Dawn/)

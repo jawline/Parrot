@@ -9,6 +9,7 @@ isParagraphEnd ('\n':'#':xs) = True
 isParagraphEnd ('\n':'*':xs) = True
 isParagraphEnd ('\n':'-':xs) = True
 isParagraphEnd ('\n':'`':'`':'`':xs) = True
+isParagraphEnd ('\n':'!':'=':'!':'=':'!':xs) = True
 isParagraphEnd ('\n':[]) = True
 isParagraphEnd n = False
 
