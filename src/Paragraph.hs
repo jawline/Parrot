@@ -28,9 +28,7 @@ transformParagraphInt (x:xs)
   | isStartOfLink x = case (transformLink xs) of
     Just d -> combinepg d
     Nothing -> combinepg ([x], xs)
-  | otherwise = (x:paragraph, remaining)
-    where
-      (paragraph, remaining) = (transformParagraphInt xs)
+  | otherwise = combinepg ([x], xs)
 
 transformType :: String -> String -> (String, String)
 transformType elemname source = ("<" ++ elemname ++ ">" ++ (trim paragraph) ++ "</" ++ elemname ++ ">", remaining)
