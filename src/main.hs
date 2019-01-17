@@ -9,8 +9,13 @@ import Data.Time.Clock.POSIX
 import Data.Time.Clock
 import Data.Time.Format
 
-millisToUTC :: String -> String
-millisToUTC r = formatTime defaultTimeLocale "%d-%m-%Y" timestamp 
+type ArticleInfo = (String, UTCTime, String, [String])
+
+showTime :: UTCTime -> String
+showTime timestamp = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
+
+millisToUTC :: String -> UTCTime
+millisToUTC r = timestamp 
   where t = round ((read r :: Float))
         timestamp = posixSecondsToUTCTime $ (fromInteger t)
 
@@ -46,7 +51,7 @@ extractTitle source = trim (drop (length prelude) (findLine prelude source))
   where
     prelude = "!=!=! Title:"
 
-extractDate :: String -> String
+extractDate :: String -> UTCTime
 extractDate source = millisToUTC (trim (drop (length prelude) (findLine prelude source)))
   where
     prelude = "!=!=! Created:"
@@ -76,7 +81,7 @@ mergeTag next current = if (length current) == 0 then next else current ++ ", " 
 
 mergeTags tags = foldr mergeTag "" tags
 
-transformArticle :: String -> Int -> (Int, FilePath) -> IO (String, String, String, [String])
+transformArticle :: String -> Int -> (Int, FilePath) -> IO ArticleInfo 
 transformArticle template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
   source <- readFile filename
@@ -86,7 +91,7 @@ transformArticle template total (index, filename) = do
   let articleTags = (extractTags source)
   let withText = replaceInString template "{{{ARTICLE_CONTENT}}}" (transform source)
   let withTitle = replaceInString withText "{{{ARTICLE_TITLE}}}" articleTitle
-  let withTime = replaceInString withTitle "{{{ARTICLE_TIME}}}" articleDate
+  let withTime = replaceInString withTitle "{{{ARTICLE_TIME}}}" (showTime articleDate)
   let withTags = replaceInString withTime "{{{ARTICLE_TAGS}}}" (mergeTags articleTags)
   let transformedArticle = withTags
   let outfile = outputArticles ++ titleToFilename articleTitle ++ ".html" 
@@ -103,16 +108,16 @@ date (_, x, _, _) = x
 intro (_, _, x, _) = x
 tags (_, _, _, x) = x
 
-formatListItem :: String -> (String, String, String, [String]) -> String
+formatListItem :: String -> ArticleInfo -> String
 formatListItem template item = withTargets 
   where
     withTitle = replaceInString template "{{{LI_NAME}}}" (title item)
     withIntro = replaceInString withTitle "{{{LI_DESCRIPTION}}}" (intro item)
-    withDate = replaceInString withIntro "{{{LI_DATE}}}" (date item)
+    withDate = replaceInString withIntro "{{{LI_DATE}}}" (showTime (date item))
     withTags = replaceInString withDate "{{{LI_TAGS}}}" (mergeTags (tags item))
     withTargets = replaceInString withTags "{{{LI_TARGET}}}" ("/" ++ articlesDirectory ++ (titleToFilename (title item)))
 
-writeList :: Int -> (Int, String) -> [(String, String, String, [String])] -> String -> String -> IO ()
+writeList :: Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
   writeFile (outputLists ++ listname ++ ".html") withContent 
