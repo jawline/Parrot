@@ -1,0 +1,16 @@
+runtime: python27
+api_version: 1
+threadsafe: no
+
+handlers:
+
+- url: /(.*\.(gif|pdf|png|jpg|ico|js|css|ttf|ogg|mp4|json|otf|webp))$
+  static_files: main/\1
+  upload: main/.*\.(gif|pdf|png|jpg|ico|js|css|ttf|ogg|mp4|json|otf|webp)$
+
+- url: /robots.txt
+  static_files: robots.txt
+  upload: robots.txt 
+
+- url: .*
+  script: main.py

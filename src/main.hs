@@ -5,26 +5,12 @@ import Data.List
 import Util
 import CopyDirectory
 import Meta
+import Paths
+
+import System.Environment
+import System.Exit
 
 type ArticleInfo = (String, Float, String, [String])
-
-articlesDirectory = "articles/"
-listsDirectory = "list/"
-
-inputDirectory = "./sources/"
-inputArticles = inputDirectory ++ articlesDirectory
-inputTemplates = inputDirectory ++ "/templates/"
-inputTemplateArticle = inputTemplates ++ "article.html"
-inputTemplateList = inputTemplates ++ "list.html"
-inputTemplateNav = inputTemplates ++ "nav.html"
-inputTemplateListItem = inputTemplates ++ "list_item.html"
-inputTemplateIndex = inputTemplates ++ "index.html"
-inputStatic = inputDirectory ++ "static/"
-
-outputDirectory = "./bin/"
-outputArticles = outputDirectory ++ articlesDirectory
-outputLists = outputDirectory ++ listsDirectory
-outputIndex = outputDirectory ++ "index.html"
 
 getAllMarkdown root = do
   all <- listDirectory root
@@ -35,8 +21,8 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source ".md" ".html"
 
-transformArticle :: String -> Int -> (Int, FilePath) -> IO ArticleInfo 
-transformArticle template total (index, filename) = do
+transformArticle :: String -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
+transformArticle oc template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
   source <- readFile filename
   let articleTitle = (extractTitle source) 
@@ -48,7 +34,7 @@ transformArticle template total (index, filename) = do
   let withTime = replaceInString withTitle "{{{ARTICLE_TIME}}}" (showTime articleDate)
   let withTags = replaceInString withTime "{{{ARTICLE_TAGS}}}" (mergeTags articleTags)
   let transformedArticle = withTags
-  let outfile = outputArticles ++ titleToFilename articleTitle ++ ".html" 
+  let outfile = oc ++ titleToFilename articleTitle ++ ".html" 
   writeFile outfile transformedArticle
   return (articleTitle, articleDate, extractIntroduction source, extractTags source)
 
@@ -71,8 +57,8 @@ formatListItem template item = withTargets
     withTags = replaceInString withDate "{{{LI_TAGS}}}" (mergeTags (tags item))
     withTargets = replaceInString withTags "{{{LI_TARGET}}}" ("/" ++ articlesDirectory ++ (titleToFilename (title item)))
 
-writeList :: Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
-writeList total (index, listname) listitems template itemTemplate = do
+writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
+writeList outputLists total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
   writeFile (outputLists ++ listname ++ ".html") withContent 
     where
@@ -85,38 +71,52 @@ templateWithNav navTemplate filename = do
   template <- readFile filename
   return (replaceInString template "{{{NAV_BAR_CONTENT}}}" navTemplate)
 
+failArguments = do
+  putStrLn "Incorrect Usage"
+  putStrLn "Expected MDHS Source Output"
+  exitWith (ExitFailure 1)
+
 main = do
+
+  putStrLn "[+] Finding Targets"
+
+  programArguments <- getArgs
+
+  when (length programArguments /= 2) $ failArguments
+
+  let inputDirectory  = programArguments !! 0
+  let outputDirectory = programArguments !! 1
 
   putStrLn "[+] Setting Up Output"
 
   _ <- setupDirectory outputDirectory
-  _ <- setupDirectory outputArticles
-  _ <- setupDirectory outputLists
+  _ <- setupDirectory (outputArticles outputDirectory)
+  _ <- setupDirectory (outputLists outputDirectory)
 
   putStrLn "[+] Reading Templates"
 
-  navTemplate <- readFile inputTemplateNav
-  indexTemplate <- templateWithNav navTemplate inputTemplateIndex
-  articleTemplate <- templateWithNav navTemplate inputTemplateArticle
-  listTemplate <- templateWithNav navTemplate inputTemplateList
-  listItemTemplate <- readFile inputTemplateListItem
+  navTemplate <- readFile (inputTemplateNav inputDirectory)
+  indexTemplate <- templateWithNav navTemplate (inputTemplateIndex inputDirectory)
+  articleTemplate <- templateWithNav navTemplate (inputTemplateArticle inputDirectory)
+  listTemplate <- templateWithNav navTemplate (inputTemplateList inputDirectory)
+  listItemTemplate <- readFile (inputTemplateListItem inputDirectory)
 
   putStrLn "[+] Copying Statics"
 
-  copyDirectory inputStatic outputDirectory
+  copyDirectory (inputStatic inputDirectory) (outputDirectory)
 
   putStrLn "[+] Generating Index"
 
-  _ <- writeFile outputIndex indexTemplate
+  _ <- writeFile (outputIndex outputDirectory) indexTemplate
 
   putStrLn "[+] Converting Articles"
 
-  all <- (getAllMarkdown inputArticles)
-  articleInfo <- mapM (transformArticle articleTemplate (length all)) (indexed all)
+  all <- getAllMarkdown (inputArticles inputDirectory)
+  articleInfo <- mapM (transformArticle (outputArticles outputDirectory) articleTemplate (length all)) (indexed all)
 
   putStrLn "[+] Generating Lists"
 
   let listNames = unique (foldr (\l1 r1 -> (tags l1) ++ r1) [] articleInfo)
-  _ <- mapM_ (\(i, x) -> writeList (length listNames) (i, x) (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
+  _ <- mapM_ (\(i, x) -> writeList (outputLists outputDirectory) (length listNames) (i, x) (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
 
   putStrLn "[+] Done"

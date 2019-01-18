@@ -5,7 +5,7 @@ build:
 	ghc --make -O3 -isrc -outputdir ./bin/ -o ./bin/main src/main.hs
 
 test: build
-	./bin/main 
+	./bin/main ./sources/ ./bin/ 
 	(cd bin; python ../scripts/test_server.py)
 
 clean:
