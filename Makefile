@@ -2,10 +2,10 @@ all: build
 
 build:
 	mkdir -p ./bin/
-	ghc --make -isrc -outputdir ./bin/ -o ./bin/main src/main.hs
+	ghc --make -O3 -isrc -outputdir ./bin/ -o ./bin/main src/main.hs
 
 test: build
-	./bin/main
+	./bin/main 
 	(cd bin; python ../scripts/test_server.py)
 
 clean:

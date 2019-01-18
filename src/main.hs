@@ -125,7 +125,8 @@ writeList total (index, listname) listitems template itemTemplate = do
   writeFile (outputLists ++ listname ++ ".html") withContent 
     where
       withTitle = replaceInString template "{{{LIST_TITLE}}}" listname
-      formattedItems = (map (formatListItem itemTemplate) listitems)
+      sortedItems = reverse (sortOn date listitems)
+      formattedItems = (map (formatListItem itemTemplate) sortedItems)
       withContent = replaceInString withTitle "{{{LIST_CONTENT}}}" (foldr (++) "" formattedItems)
 
 templateWithNav navTemplate filename = do
@@ -159,8 +160,7 @@ main = do
   putStrLn "[+] Converting Articles"
 
   all <- (getAllMarkdown inputArticles)
-  articleInfoUnsorted <- mapM (transformArticle articleTemplate (length all)) (indexed all)
-  let articleInfo = sortOn date articleInfo
+  articleInfo <- mapM (transformArticle articleTemplate (length all)) (indexed all)
 
   _ <- mapM_ (\x -> putStrLn (show (date x))) articleInfo
 
