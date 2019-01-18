@@ -1,6 +1,9 @@
 module Util where
 import Data.Char
 import System.IO.Error (tryIOError)
+import Data.Time.Clock.POSIX
+import Data.Time.Clock
+import Data.Time.Format
 
 input :: IO String
 input = do
@@ -11,6 +14,11 @@ input = do
       return (c:remain)
     Left(_) -> 
       return []
+
+showTime :: Float -> String
+showTime r = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
+  where t = round r
+        timestamp = posixSecondsToUTCTime $ (fromInteger t)
 
 endOfLine :: String -> String
 endOfLine [] = []

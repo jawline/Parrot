@@ -7,19 +7,8 @@ import CopyDirectory
 
 import Data.List
 import Data.Function
-import Data.Time.Clock.POSIX
-import Data.Time.Clock
-import Data.Time.Format
 
 type ArticleInfo = (String, Float, String, [String])
-
-showTime :: Float -> String
-showTime timestamp = formatTime defaultTimeLocale "%d-%m-%Y" (millisToUTC timestamp)
-
-millisToUTC :: Float -> UTCTime
-millisToUTC r = timestamp 
-  where t = round r
-        timestamp = posixSecondsToUTCTime $ (fromInteger t)
 
 articlesDirectory = "articles/"
 listsDirectory = "list/"
@@ -161,8 +150,6 @@ main = do
 
   all <- (getAllMarkdown inputArticles)
   articleInfo <- mapM (transformArticle articleTemplate (length all)) (indexed all)
-
-  _ <- mapM_ (\x -> putStrLn (show (date x))) articleInfo
 
   putStrLn "[+] Generating Lists"
 
