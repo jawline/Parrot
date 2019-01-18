@@ -33,7 +33,4 @@ extractIntroduction source = trim intro
 
 mergeTag :: String -> String -> String
 mergeTag next current = if (length current) == 0 then next else current ++ ", " ++ next
-
 mergeTags tags = foldr mergeTag "" tags
-
-
