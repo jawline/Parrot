@@ -22,5 +22,5 @@ isCodeEnd _ = False
 
 transformMultilineCode :: String -> Maybe (String, String)
 transformMultilineCode xs = case readToNext xs isCodeEnd of
-  Just (code, rest) -> Just ("<code>" ++ code ++ "</code>", drop 3 rest)
+  Just (code, rest) -> Just ("<pre><code>" ++ code ++ "</code></pre>", drop 3 rest)
   Nothing -> Nothing
