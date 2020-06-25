@@ -9,6 +9,8 @@ import Code
 import Meta
 import Paths
 
+combined x r = x ++ "\n" ++ r
+
 {-|
   Transform a piece of markdown to a HTML fragment
 -}
@@ -19,13 +21,11 @@ transformMarkdown xs =
     ('#':xs) -> header ++ "\n" ++ (transformMarkdown rest)
       where (header, rest) = (transformHeader ('#':xs))
     ('!':'=':'!':'=':'!':xs) -> (transformMarkdown (skipLine xs)) 
-    ('`':'`':'`':xs) -> case transformMultilineCode xs of
-      Just (code, remaining) -> code ++ transformMarkdown remaining
-      Nothing -> '`':'`':'`':(transformMarkdown xs)
-    ('*':xs) -> list ++ "\n" ++ (transformMarkdown rest)
-      where (list, rest) = (transformList ('*':xs))
-    xs -> paragraph ++ "\n" ++ (transformMarkdown rest)
-      where (paragraph, rest) = (transformParagraph xs)
+    ('`':'`':'`':xs) -> combined (transformMultilineCode xs)
+    ('*':xs) -> combined (transformList ('*':xs))
+    xs -> combined (transformParagraph xs)
+  where
+    combined (x, r) = x ++ "\n" ++ (transformMarkdown r)
 
 {-|
   The series of string replacements that transform the template article to a rendered article

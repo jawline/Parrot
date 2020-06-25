@@ -23,9 +23,7 @@ transformParagraphInt :: String -> (String, String)
 transformParagraphInt [] = ([], [])
 transformParagraphInt (x:xs)
   | isParagraphEnd (x:xs) = ([], xs)
-  | isInlineCodeStart x = case (transformInlineCode xs) of
-    Just d -> combinepg d
-    Nothing -> combinepg ([x], xs)
+  | isInlineCodeStart x = combinepg (transformInlineCode xs)
   | isStartOfLink x = case (transformLink xs) of
     Just d -> combinepg d
     Nothing -> combinepg ([x], xs)
