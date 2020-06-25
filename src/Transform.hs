@@ -4,6 +4,7 @@ import Paragraph
 import Util
 import List
 import Code
+import Meta
 
 transform :: String -> String
 transform [] = []
@@ -19,3 +20,11 @@ transform xs =
       where (list, rest) = (transformList ('*':xs))
     xs -> paragraph ++ "\n" ++ (transform rest)
       where (paragraph, rest) = (transformParagraph xs)
+
+transformArticle :: String -> String -> (String, ArticleInfo)
+transformArticle template source = (finalContent, (title, info, date, tags))
+  where
+    (title, info, date, tags) = extractMetadata source
+    sourceHtml = transform source
+    replacements = [("{{{ARTICLE_CONTENT}}}", sourceHtml), ("{{{ARTICLE_TITLE}}}", title), ("{{{ARTICLE_TIME}}}", showTime date), ("{{{ARTICLE_TAGS}}}", mergeTags tags)]
+    finalContent = multiReplaceInString template replacements 

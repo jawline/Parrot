@@ -28,11 +28,24 @@ endOfLine (x:xs) = x:(endOfLine xs)
 matches :: String -> String -> Bool
 matches target string = take (length target) string == target
 
-replaceInString :: String -> String -> String -> String
-replaceInString [] _ _ = []
-replaceInString (x:xs) target with
-  | matches target (x:xs) = replaceInString (with ++ (drop (length target) (x:xs))) target with
-  | otherwise = x:(replaceInString xs target with)
+type StringReplacer = (String, String)
+
+{-|
+  Replace a target string with another in the source string
+  Arguments: source target replaceWith
+-} 
+replaceInString :: String -> StringReplacer -> String
+replaceInString [] _ = []
+replaceInString (x:xs) (target,with)
+  | matches target (x:xs) = replaceInString (with ++ (drop (length target) (x:xs))) (target,with)
+  | otherwise = x:(replaceInString xs (target,with))
+
+{-|
+  Applies a series of string replacements to a target string from left to right
+-}
+multiReplaceInString :: String -> [StringReplacer] -> String
+multiReplaceInString origin [] = origin
+multiReplaceInString origin (replacer:xs) = multiReplaceInString (replaceInString origin replacer) xs
 
 readToNext :: String -> (String -> Bool) -> Maybe (String, String)
 readToNext [] _        = Nothing

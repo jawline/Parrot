@@ -34,3 +34,13 @@ extractIntroduction source = trim intro
 mergeTag :: String -> String -> String
 mergeTag next current = if (length current) == 0 then next else current ++ ", " ++ next
 mergeTags tags = foldr mergeTag "" tags
+
+type ArticleInfo = (String, String, Float, [String])
+extractMetadata :: String -> ArticleInfo
+extractMetadata source = (title, info, date, tags)
+  where
+    title = extractTitle source
+    info = extractIntroduction source
+    date = extractDate source
+    tags = extractTags source
+        

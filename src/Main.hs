@@ -10,8 +10,6 @@ import Paths
 import System.Environment
 import System.Exit
 
-type ArticleInfo = (String, Float, String, [String])
-
 getAllMarkdown root = do
   all <- listDirectory root
   let filtered = filter (isSuffixOf ".md") all
@@ -19,57 +17,49 @@ getAllMarkdown root = do
   return mapped
 
 rewriteSuffix :: String -> String
-rewriteSuffix source = replaceInString source ".md" ".html"
+rewriteSuffix source = replaceInString source (".md",".html")
 
-transformArticle :: String -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
-transformArticle oc template total (index, filename) = do
+emitArticle :: String -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
+emitArticle oc template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
   source <- readFile filename
-  let articleTitle = (extractTitle source) 
-  let articleDate = (extractDate source)
-  let articleInfo = (extractIntroduction source)
-  let articleTags = (extractTags source)
-  let withText = replaceInString template "{{{ARTICLE_CONTENT}}}" (transform source)
-  let withTitle = replaceInString withText "{{{ARTICLE_TITLE}}}" articleTitle
-  let withTime = replaceInString withTitle "{{{ARTICLE_TIME}}}" (showTime articleDate)
-  let withTags = replaceInString withTime "{{{ARTICLE_TAGS}}}" (mergeTags articleTags)
-  let transformedArticle = withTags
-  let outfile = oc ++ titleToFilename articleTitle ++ ".html" 
-  writeFile outfile transformedArticle
-  return (articleTitle, articleDate, extractIntroduction source, extractTags source)
+  let (article, (title, intro, date, tags)) = transformArticle template source
+  let outfile = oc ++ titleToFilename title ++ ".html" 
+  writeFile outfile article
+  return (title, intro, date, tags)
 
 setupDirectory output = do
   exists <- (doesDirectoryExist output)
   when (exists == True) $ removeDirectoryRecursive output
   createDirectory output
 
-title (x, _, _, _) = x
-date (_, x, _, _) = x
-intro (_, _, x, _) = x
-tags (_, _, _, x) = x
+formatListReplacements :: ArticleInfo -> [StringReplacer]
+formatListReplacements (title, intro, date, tags) =
+  [("{{{LI_NAME}}}", title),
+   ("{{{LI_DESCRIPTION}}}", intro),
+   ("{{{LI_DATE}}}", showTime date),
+   ("{{{LI_TAGS}}}", mergeTags tags),
+   ("{{{LI_TARGET}}}", "/" ++ articlesDirectory ++ (titleToFilename title))]
 
 formatListItem :: String -> ArticleInfo -> String
-formatListItem template item = withTargets 
+formatListItem template item = multiReplaceInString template replacements
   where
-    withTitle = replaceInString template "{{{LI_NAME}}}" (title item)
-    withIntro = replaceInString withTitle "{{{LI_DESCRIPTION}}}" (intro item)
-    withDate = replaceInString withIntro "{{{LI_DATE}}}" (showTime (date item))
-    withTags = replaceInString withDate "{{{LI_TAGS}}}" (mergeTags (tags item))
-    withTargets = replaceInString withTags "{{{LI_TARGET}}}" ("/" ++ articlesDirectory ++ (titleToFilename (title item)))
+    replacements = formatListReplacements item
 
 writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList outputLists total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
   writeFile (outputLists ++ listname ++ ".html") withContent 
     where
-      withTitle = replaceInString template "{{{LIST_TITLE}}}" listname
-      sortedItems = reverse (sortOn date listitems)
+      withTitle = replaceInString template ("{{{LIST_TITLE}}}",listname)
+      articleDate (_, _, date, _) = date
+      sortedItems = reverse (sortOn articleDate listitems)
       formattedItems = (map (formatListItem itemTemplate) sortedItems)
-      withContent = replaceInString withTitle "{{{LIST_CONTENT}}}" (foldr (++) "" formattedItems)
+      withContent = replaceInString withTitle ("{{{LIST_CONTENT}}}",(foldr (++) "" formattedItems))
 
 templateWithNav navTemplate filename = do
   template <- readFile filename
-  return (replaceInString template "{{{NAV_BAR_CONTENT}}}" navTemplate)
+  return (replaceInString template ("{{{NAV_BAR_CONTENT}}}",navTemplate))
 
 failArguments = do
   putStrLn "Incorrect Usage"
@@ -112,11 +102,13 @@ main = do
   putStrLn "[+] Converting Articles"
 
   all <- getAllMarkdown (inputArticles inputDirectory)
-  articleInfo <- mapM (transformArticle (outputArticles outputDirectory) articleTemplate (length all)) (indexed all)
+  articleInfo <- mapM (emitArticle (outputArticles outputDirectory) articleTemplate (length all)) (indexed all)
 
   putStrLn "[+] Generating Lists"
 
-  let listNames = unique (foldr (\l1 r1 -> (tags l1) ++ r1) [] articleInfo)
-  _ <- mapM_ (\(i, x) -> writeList (outputLists outputDirectory) (length listNames) (i, x) (filter (\y -> elem x (tags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
+  let articleTags (_, _, _, tags) = tags
+  let listNames = unique (foldr (\l1 r1 -> (articleTags l1) ++ r1) [] articleInfo)
+
+  _ <- mapM_ (\(i, x) -> writeList (outputLists outputDirectory) (length listNames) (i, x) (filter (\y -> elem x (articleTags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
 
   putStrLn "[+] Done"
