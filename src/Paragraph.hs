@@ -13,21 +13,18 @@ isParagraphEnd ('\n':'!':'=':'!':'=':'!':xs) = True
 isParagraphEnd ('\n':[]) = True
 isParagraphEnd n = False
 
-combine :: (String -> (String, String)) -> (String, String) -> (String, String)
-combine y (l, r) = (l ++ lfollow, rfollow)
-  where (lfollow, rfollow) = y r
-
-combinepg = combine transformParagraphInt
-
 transformParagraphInt :: String -> (String, String)
 transformParagraphInt [] = ([], [])
 transformParagraphInt (x:xs)
   | isParagraphEnd (x:xs) = ([], xs)
-  | isInlineCodeStart x = combinepg (transformInlineCode xs)
+  | isInlineCodeStart x = combine (transformInlineCode xs)
   | isStartOfLink x = case (transformLink xs) of
-    Just d -> combinepg d
-    Nothing -> combinepg ([x], xs)
-  | otherwise = combinepg ([x], xs)
+    Just d -> combine d
+    Nothing -> combine ([x], xs)
+  | otherwise = combine ([x], xs)
+  where
+    combine (content, rest) = let (lfollow, rfollow) = transformParagraphInt rest
+      in (content ++ lfollow, rfollow)
 
 transformType :: String -> String -> (String, String)
 transformType elemname source = ("<" ++ elemname ++ ">" ++ (trim paragraph) ++ "</" ++ elemname ++ ">", remaining)
