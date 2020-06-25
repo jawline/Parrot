@@ -1,30 +1,67 @@
 module Transform where
+import System.FilePath
+
 import Header
 import Paragraph
 import Util
 import List
 import Code
 import Meta
+import Paths
 
-transform :: String -> String
-transform [] = []
-transform xs =
+{-|
+  Transform a piece of markdown to a HTML fragment
+-}
+transformMarkdown :: String -> String
+transformMarkdown [] = []
+transformMarkdown xs =
   case (trimLeft xs) of
-    ('#':xs) -> header ++ "\n" ++ (transform rest)
+    ('#':xs) -> header ++ "\n" ++ (transformMarkdown rest)
       where (header, rest) = (transformHeader ('#':xs))
-    ('!':'=':'!':'=':'!':xs) -> (transform (skipLine xs)) 
+    ('!':'=':'!':'=':'!':xs) -> (transformMarkdown (skipLine xs)) 
     ('`':'`':'`':xs) -> case transformMultilineCode xs of
-      Just (code, remaining) -> code ++ transform remaining
-      Nothing -> '`':'`':'`':(transform xs)
-    ('*':xs) -> list ++ "\n" ++ (transform rest)
+      Just (code, remaining) -> code ++ transformMarkdown remaining
+      Nothing -> '`':'`':'`':(transformMarkdown xs)
+    ('*':xs) -> list ++ "\n" ++ (transformMarkdown rest)
       where (list, rest) = (transformList ('*':xs))
-    xs -> paragraph ++ "\n" ++ (transform rest)
+    xs -> paragraph ++ "\n" ++ (transformMarkdown rest)
       where (paragraph, rest) = (transformParagraph xs)
 
+{-|
+  The series of string replacements that transform the template article to a rendered article
+-}
+articleReplacements source (title, _, date, tags) = [
+  ("{{{ARTICLE_CONTENT}}}", source),
+  ("{{{ARTICLE_TITLE}}}", title),
+  ("{{{ARTICLE_TIME}}}", showTime date),
+  ("{{{ARTICLE_TAGS}}}", mergeTags tags)]
+
+
+{-|
+  Transform an article source markdown to a HTML fragment and article info
+-}
 transformArticle :: String -> String -> (String, ArticleInfo)
-transformArticle template source = (finalContent, (title, info, date, tags))
+transformArticle template source = (finalContent, articleInfo)
   where
-    (title, info, date, tags) = extractMetadata source
-    sourceHtml = transform source
-    replacements = [("{{{ARTICLE_CONTENT}}}", sourceHtml), ("{{{ARTICLE_TITLE}}}", title), ("{{{ARTICLE_TIME}}}", showTime date), ("{{{ARTICLE_TAGS}}}", mergeTags tags)]
-    finalContent = multiReplaceInString template replacements 
+    articleInfo = extractMetadata source
+    sourceHtml = transformMarkdown source
+    finalContent = multiReplaceInString template (articleReplacements source articleInfo)
+
+{-|
+  The template string replacements for list items
+-}
+listItemReplacements :: ArticleInfo -> [StringReplacer]
+listItemReplacements (title, intro, date, tags) =
+  [("{{{LI_NAME}}}", title),
+   ("{{{LI_DESCRIPTION}}}", intro),
+   ("{{{LI_DATE}}}", showTime date),
+   ("{{{LI_TAGS}}}", mergeTags tags),
+   ("{{{LI_TARGET}}}", ("/" </> articlesDirectory </> (titleToFilename title)))]
+
+{-|
+  Translates the list item template and an ArticleInfo instance into a list item HTML fragment.
+-}
+transformListItem :: String -> ArticleInfo -> String
+transformListItem template item = multiReplaceInString template replacements
+  where
+    replacements = listItemReplacements item

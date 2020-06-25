@@ -35,19 +35,6 @@ setupDirectory output = do
   when (exists == True) $ removeDirectoryRecursive output
   createDirectory output
 
-formatListReplacements :: ArticleInfo -> [StringReplacer]
-formatListReplacements (title, intro, date, tags) =
-  [("{{{LI_NAME}}}", title),
-   ("{{{LI_DESCRIPTION}}}", intro),
-   ("{{{LI_DATE}}}", showTime date),
-   ("{{{LI_TAGS}}}", mergeTags tags),
-   ("{{{LI_TARGET}}}", "/" ++ articlesDirectory ++ (titleToFilename title))]
-
-formatListItem :: String -> ArticleInfo -> String
-formatListItem template item = multiReplaceInString template replacements
-  where
-    replacements = formatListReplacements item
-
 writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList outputLists total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
@@ -55,7 +42,7 @@ writeList outputLists total (index, listname) listitems template itemTemplate = 
     where
       articleDate (_, _, date, _) = date
       sortedItems = reverse (sortOn articleDate listitems)
-      formattedItems = (map (formatListItem itemTemplate) sortedItems)
+      formattedItems = (map (transformListItem itemTemplate) sortedItems)
       replacers = [("{{{LIST_TITLE}}}",listname),("{{{LIST_CONTENT}}}",(foldr (++) "" formattedItems))]
 
 templateWithNav navTemplate filename = do
