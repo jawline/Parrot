@@ -7,24 +7,26 @@ import CopyDirectory
 import Meta
 import Paths
 
+import System.FilePath
 import System.Environment
 import System.Exit
 
 getAllMarkdown root = do
   all <- listDirectory root
-  let filtered = filter (isSuffixOf ".md") all
-  let mapped = map (\x -> root ++ x) filtered
-  return mapped
+  return (mapper (mdfilter all))
+  where
+    mdfilter = filter (isSuffixOf ".md")
+    mapper = map (\x -> root </> x)
 
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source (".md",".html")
 
-emitArticle :: String -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
-emitArticle oc template total (index, filename) = do
+emitArticle :: FilePath -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
+emitArticle outputDir template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
   source <- readFile filename
   let (article, (title, intro, date, tags)) = transformArticle template source
-  let outfile = oc ++ titleToFilename title ++ ".html" 
+  let outfile = outputDir </> titleToFilename title <.> "html" 
   writeFile outfile article
   return (title, intro, date, tags)
 
@@ -49,13 +51,12 @@ formatListItem template item = multiReplaceInString template replacements
 writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList outputLists total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
-  writeFile (outputLists ++ listname ++ ".html") withContent 
+  writeFile (outputLists ++ listname ++ ".html") (multiReplaceInString template replacers)
     where
-      withTitle = replaceInString template ("{{{LIST_TITLE}}}",listname)
       articleDate (_, _, date, _) = date
       sortedItems = reverse (sortOn articleDate listitems)
       formattedItems = (map (formatListItem itemTemplate) sortedItems)
-      withContent = replaceInString withTitle ("{{{LIST_CONTENT}}}",(foldr (++) "" formattedItems))
+      replacers = [("{{{LIST_TITLE}}}",listname),("{{{LIST_CONTENT}}}",(foldr (++) "" formattedItems))]
 
 templateWithNav navTemplate filename = do
   template <- readFile filename
