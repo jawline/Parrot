@@ -1,15 +1,26 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE LambdaCase      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving      #-}
+{-# LANGUAGE OverloadedStrings      #-}
+{-# LANGUAGE TemplateHaskell      #-}
+{-# LANGUAGE QuasiQuotes      #-}
 import Transform
 import System.Directory
-import Control.Monad 
-import Data.List 
+import Control.Monad
+import Data.List
 import Util
 import CopyDirectory
 import Meta
 import Paths
-
+import System.FSNotify
+import Control.Concurrent (threadDelay)
+import Control.Monad (forever)
 import System.FilePath
 import System.Environment
 import System.Exit
+import Control.Monad.Trans.State as State
+    ( State, put, modify, execState, get )
 
 getAllMarkdown root = do
   all <- listDirectory root
@@ -21,12 +32,12 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source (".md",".html")
 
-emitArticle :: FilePath -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
+emitArticle :: FilePath -> String -> Int -> (Int, FilePath) -> IO ArticleInfo
 emitArticle outputDir template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
   source <- readFile filename
   let (article, (title, intro, date, tags)) = transformArticle template source
-  let outfile = outputDir </> titleToFilename title <.> "html" 
+  let outfile = outputDir </> titleToFilename title <.> "html"
   writeFile outfile article
   return (title, intro, date, tags)
 
@@ -54,23 +65,7 @@ failArguments = do
   putStrLn "Expected MDHS Source Output"
   exitWith (ExitFailure 1)
 
-main = do
-
-  putStrLn "[+] Finding Targets"
-
-  programArguments <- getArgs
-
-  when (length programArguments /= 2) $ failArguments
-
-  let inputDirectory  = programArguments !! 0
-  let outputDirectory = programArguments !! 1
-
-  putStrLn "[+] Setting Up Output"
-
-  _ <- setupDirectory outputDirectory
-  _ <- setupDirectory (outputArticles outputDirectory)
-  _ <- setupDirectory (outputLists outputDirectory)
-
+transformDirectory inputDirectory outputDirectory = do
   putStrLn "[+] Reading Templates"
 
   navTemplate <- readFile (inputTemplateNav inputDirectory)
@@ -98,5 +93,42 @@ main = do
   let listNames = unique (foldr (\l1 r1 -> (articleTags l1) ++ r1) [] articleInfo)
 
   _ <- mapM_ (\(i, x) -> writeList (outputLists outputDirectory) (length listNames) (i, x) (filter (\y -> elem x (articleTags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
+
+  putStrLn ("[+] Finished Transforming " ++ inputDirectory)
+  return ()
+
+watchJob inputDirectory outputDirectory =
+  withManager $ \mgr -> do
+    watchTree
+      mgr
+      inputDirectory
+      (const True) -- predicate
+      triggerTransform
+    forever $ threadDelay 1000000
+  where
+    triggerTransform event = do
+      putStrLn ("[+] Transform because of change to " ++ (show event))
+      transformDirectory inputDirectory outputDirectory
+      return ()
+
+main = do
+
+  putStrLn "[+] Finding Targets"
+
+  programArguments <- getArgs
+
+  when (length programArguments /= 2) $ failArguments
+
+  let inputDirectory  = programArguments !! 0
+  let outputDirectory = programArguments !! 1
+
+  putStrLn "[+] Setting Up Output"
+
+  _ <- setupDirectory outputDirectory
+  _ <- setupDirectory (outputArticles outputDirectory)
+  _ <- setupDirectory (outputLists outputDirectory)
+
+  _ <- transformDirectory inputDirectory outputDirectory
+  _ <- watchJob inputDirectory outputDirectory
 
   putStrLn "[+] Done"

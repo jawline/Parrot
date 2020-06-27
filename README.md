@@ -7,4 +7,4 @@ a static artefact which can be deployed on a webserver. [For an example, my webs
 ## Getting Started
 
 To build the included sample website execute: `cabal run Parrot --
-./examples/simple_site/ ./out/`
+./examples/sample_site/ ./out/`
