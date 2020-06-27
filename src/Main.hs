@@ -97,12 +97,13 @@ transformDirectory inputDirectory outputDirectory = do
   putStrLn ("[+] Finished Transforming " ++ inputDirectory)
   return ()
 
+-- Repeatedly watches inputDirectory and transforms the source each time it changes
 watchJob inputDirectory outputDirectory =
   withManager $ \mgr -> do
     watchTree
       mgr
       inputDirectory
-      (const True) -- predicate
+      (const True) -- Const ignores the contents
       triggerTransform
     forever $ threadDelay 1000000
   where

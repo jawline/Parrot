@@ -1,0 +1,3 @@
+[submodule "examples/sample_site"]
+	path = examples/sample_site
+	url = git@github.com:jawline/website.git
