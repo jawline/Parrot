@@ -1,10 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE LambdaCase      #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving      #-}
-{-# LANGUAGE OverloadedStrings      #-}
-{-# LANGUAGE TemplateHaskell      #-}
-{-# LANGUAGE QuasiQuotes      #-}
 import Transform
 import System.Directory
 import Control.Monad
@@ -23,6 +16,7 @@ import Control.Monad.Trans.State as State
     ( State, put, modify, execState, get )
 
 getAllMarkdown root = do
+  putStrLn ("[+] Scanning " ++ root)
   all <- listDirectory root
   return (mapper (mdfilter all))
   where
@@ -41,15 +35,27 @@ emitArticle outputDir template total (index, filename) = do
   writeFile outfile article
   return (title, intro, date, tags)
 
+removePathRecursive path = do
+  isDir <- doesDirectoryExist path
+  if' isDir (removeContentsRecursive path) (removeFile path)
+
+removeContentsRecursive path = do
+  cont <- listDirectory path
+  traverse removePathRecursive [path </> x | x <- cont]
+  return ()
+
+if' :: Bool -> a -> a -> a
+if' True  x _ = x
+if' False _ y = y
+
 setupDirectory output = do
   exists <- (doesDirectoryExist output)
-  when (exists == True) $ removeDirectoryRecursive output
-  createDirectory output
+  if' exists (removeContentsRecursive output) (createDirectory output)
 
 writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList outputLists total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
-  writeFile (outputLists ++ listname ++ ".html") (multiReplaceInString template replacers)
+  writeFile (outputLists </> listname <.> ".html") (multiReplaceInString template replacers)
     where
       articleDate (_, _, date, _) = date
       sortedItems = reverse (sortOn articleDate listitems)

@@ -20,7 +20,7 @@ transformMarkdown xs =
   case (trimLeft xs) of
     ('#':xs) -> header ++ "\n" ++ (transformMarkdown rest)
       where (header, rest) = (transformHeader ('#':xs))
-    ('!':'=':'!':'=':'!':xs) -> (transformMarkdown (skipLine xs)) 
+    ('!':'=':'!':'=':'!':xs) -> (transformMarkdown (skipLine xs))
     ('`':'`':'`':xs) -> combined (transformMultilineCode xs)
     ('*':xs) -> combined (transformList ('*':xs))
     xs -> combined (transformParagraph xs)
@@ -45,7 +45,8 @@ transformArticle template source = (finalContent, articleInfo)
   where
     articleInfo = extractMetadata source
     sourceHtml = transformMarkdown source
-    finalContent = multiReplaceInString template (articleReplacements source articleInfo)
+    finalContent = multiReplaceInString template (articleReplacements (transformMarkdown source) articleInfo)
+
 
 {-|
   The template string replacements for list items

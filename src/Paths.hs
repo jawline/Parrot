@@ -1,8 +1,7 @@
 module Paths where
 import System.FilePath
 
-articlesDirectory = takeDirectory "articles"
-listsDirectory = takeDirectory "list"
+articlesDirectory = "articles"
 
 inputArticles inputDirectory = inputDirectory </> articlesDirectory
 inputTemplates inputDirectory = inputDirectory </> "templates"
@@ -13,6 +12,6 @@ inputTemplateListItem inputDirectory = (inputTemplates inputDirectory) </> "list
 inputTemplateIndex inputDirectory = (inputTemplates inputDirectory) </> "index.html"
 inputStatic inputDirectory = inputDirectory </> "static/"
 
-outputArticles outputDirectory = outputDirectory </> "articles"
+outputArticles outputDirectory = outputDirectory </> articlesDirectory
 outputLists outputDirectory = outputDirectory </> "list"
 outputIndex outputDirectory = outputDirectory </> "index.html"
