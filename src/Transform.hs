@@ -9,8 +9,6 @@ import Code
 import Meta
 import Paths
 
-combined x r = x ++ "\n" ++ r
-
 {-|
   Transform a piece of markdown to a HTML fragment
 -}
