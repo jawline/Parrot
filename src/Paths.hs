@@ -1,17 +1,52 @@
 module Paths where
 import System.FilePath
 
-articlesDirectory = "articles"
+templateArticlesPath = "/articles/"
 
-inputArticles inputDirectory = inputDirectory </> articlesDirectory
-inputTemplates inputDirectory = inputDirectory </> "templates"
-inputTemplateArticle inputDirectory = (inputTemplates inputDirectory) </> "article.html"
-inputTemplateList inputDirectory = (inputTemplates inputDirectory) </> "list.html"
-inputTemplateNav inputDirectory = (inputTemplates inputDirectory) </> "nav.html"
-inputTemplateListItem inputDirectory = (inputTemplates inputDirectory) </> "list_item.html"
-inputTemplateIndex inputDirectory = (inputTemplates inputDirectory) </> "index.html"
-inputStatic inputDirectory = inputDirectory </> "static/"
+data InputTemplates = InputTemplates {
+  templateIndex :: String,
+  templateArticle :: String,
+  templateList :: String,
+  templateListItem :: String,
+  templateNav :: String
+}
 
-outputArticles outputDirectory = outputDirectory </> articlesDirectory
-outputLists outputDirectory = outputDirectory </> "list"
-outputIndex outputDirectory = outputDirectory </> "index.html"
+createTemplates templatesRoot = InputTemplates {
+  templateIndex = templatesRoot </> "index.html",
+  templateArticle = templatesRoot </> "article.html",
+  templateList = templatesRoot </> "list.html",
+  templateListItem = templatesRoot </> "list_item.html",
+  templateNav = templatesRoot </> "nav.html"
+}
+
+data InputDirectories = InputDirectories {
+  inputRoot :: String,
+  inputImages :: String,
+  inputStatic :: String,
+  inputArticles :: String,
+  inputTemplates :: InputTemplates
+}
+
+inputDirectories root = InputDirectories {
+  inputRoot = root,
+  inputImages = root </> "images",
+  inputStatic = root </> "static",
+  inputArticles = root </> "articles",
+  inputTemplates = createTemplates (root </> "templates")
+}
+
+data OutputDirectories = OutputDirectories {
+  root :: String,
+  articles :: String,
+  images :: String,
+  lists :: String,
+  index :: String
+}
+
+outputDirectories root = OutputDirectories {
+  root=root,
+  articles=root </> "articles",
+  images=root </> "images",
+  lists=root </>  "lists",
+  index=root </> "index" <.> "html"
+}

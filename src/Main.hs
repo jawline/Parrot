@@ -71,51 +71,53 @@ failArguments = do
   putStrLn "Expected MDHS Source Output"
   exitWith (ExitFailure 1)
 
-transformDirectory inputDirectory outputDirectory = do
+transformDirectory input output = do
   putStrLn "[+] Reading Templates"
 
-  navTemplate <- readFile (inputTemplateNav inputDirectory)
-  indexTemplate <- templateWithNav navTemplate (inputTemplateIndex inputDirectory)
-  articleTemplate <- templateWithNav navTemplate (inputTemplateArticle inputDirectory)
-  listTemplate <- templateWithNav navTemplate (inputTemplateList inputDirectory)
-  listItemTemplate <- readFile (inputTemplateListItem inputDirectory)
+  navTemplate <- readFile (templateNav templates)
+  indexTemplate <- templateWithNav navTemplate (templateIndex templates)
+  articleTemplate <- templateWithNav navTemplate (templateArticle templates)
+  listTemplate <- templateWithNav navTemplate (templateList templates)
+  listItemTemplate <- readFile (templateListItem templates)
 
   putStrLn "[+] Copying Statics"
 
-  copyDirectory (inputStatic inputDirectory) (outputDirectory)
+  copyDirectory (inputStatic input) (root output)
 
   putStrLn "[+] Generating Index"
 
-  _ <- writeFile (outputIndex outputDirectory) indexTemplate
+  _ <- writeFile (index output) indexTemplate
 
   putStrLn "[+] Converting Articles"
 
-  all <- getAllMarkdown (inputArticles inputDirectory)
-  articleInfo <- mapM (emitArticle (outputArticles outputDirectory) articleTemplate (length all)) (indexed all)
+  all <- getAllMarkdown (inputArticles input)
+  articleInfo <- mapM (emitArticle (articles output) articleTemplate (length all)) (indexed all)
 
   putStrLn "[+] Generating Lists"
 
   let articleTags (_, _, _, tags) = tags
   let listNames = unique (foldr (\l1 r1 -> (articleTags l1) ++ r1) [] articleInfo)
 
-  _ <- mapM_ (\(i, x) -> writeList (outputLists outputDirectory) (length listNames) (i, x) (filter (\y -> elem x (articleTags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
+  _ <- mapM_ (\(i, x) -> writeList (lists output) (length listNames) (i, x) (filter (\y -> elem x (articleTags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
 
-  putStrLn ("[+] Finished Transforming " ++ inputDirectory)
+  putStrLn ("[+] Finished Transforming " ++ (inputRoot input))
   return ()
+  where
+    templates = (inputTemplates input)
 
 -- Repeatedly watches inputDirectory and transforms the source each time it changes
-watchJob inputDirectory outputDirectory =
+watchJob input output =
   withManager $ \mgr -> do
     watchTree
       mgr
-      inputDirectory
+      (inputRoot input)
       (const True) -- Const ignores the contents
       triggerTransform
     forever $ threadDelay 1000000
   where
     triggerTransform event = do
       putStrLn ("[+] Transform because of change to " ++ (show event))
-      transformDirectory inputDirectory outputDirectory
+      transformDirectory input output
       return ()
 
 main = do
@@ -126,16 +128,17 @@ main = do
 
   when (length programArguments /= 2) $ failArguments
 
-  let inputDirectory  = programArguments !! 0
-  let outputDirectory = programArguments !! 1
+  let input = inputDirectories (programArguments !! 0)
+  let output = outputDirectories (programArguments !! 1)
 
   putStrLn "[+] Setting Up Output"
 
-  _ <- setupDirectory outputDirectory
-  _ <- setupDirectory (outputArticles outputDirectory)
-  _ <- setupDirectory (outputLists outputDirectory)
+  _ <- setupDirectory (root output)
+  _ <- setupDirectory (images output)
+  _ <- setupDirectory (articles output)
+  _ <- setupDirectory (lists output)
 
-  _ <- transformDirectory inputDirectory outputDirectory
-  _ <- watchJob inputDirectory outputDirectory
+  _ <- transformDirectory input output
+  _ <- watchJob input output
 
   putStrLn "[+] Done"

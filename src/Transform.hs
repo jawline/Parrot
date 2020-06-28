@@ -55,7 +55,7 @@ listItemReplacements (title, intro, date, tags) =
    ("{{{LI_DESCRIPTION}}}", intro),
    ("{{{LI_DATE}}}", showTime date),
    ("{{{LI_TAGS}}}", mergeTags tags),
-   ("{{{LI_TARGET}}}", ("/" </> articlesDirectory </> (titleToFilename title)))]
+   ("{{{LI_TARGET}}}", (templateArticlesPath </> (titleToFilename title)))]
 
 {-|
   Translates the list item template and an ArticleInfo instance into a list item HTML fragment.
