@@ -6,6 +6,7 @@ import Util
 import CopyDirectory
 import Meta
 import Paths
+import ImageTemplates (transformImages)
 import System.FSNotify
 import Control.Concurrent (threadDelay)
 import Control.Monad (forever)
@@ -86,6 +87,10 @@ transformDirectory input output = do
   let listNames = unique (foldr (\l1 r1 -> (articleTags l1) ++ r1) [] articleInfo)
 
   _ <- mapM_ (\(i, x) -> writeList (lists output) (length listNames) (i, x) (filter (\y -> elem x (articleTags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
+
+  putStrLn "[+] Translating Images"
+
+  transformImages (inputImages input) []
 
   putStrLn ("[+] Finished Transforming " ++ (inputRoot input))
   return ()
