@@ -90,7 +90,7 @@ transformDirectory input output = do
 
   putStrLn "[+] Translating Images"
 
-  transformImages (inputImages input) []
+  transformImages (inputImages input) (images output) []
 
   putStrLn ("[+] Finished Transforming " ++ (inputRoot input))
   return ()
