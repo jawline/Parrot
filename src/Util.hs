@@ -16,7 +16,7 @@ input = do
     Right(c) -> do
       remain <- input
       return (c:remain)
-    Left(_) -> 
+    Left(_) ->
       return []
 
 showTime :: Float -> String
@@ -37,7 +37,7 @@ type StringReplacer = (String, String)
 {-|
   Replace a target string with another in the source string
   Arguments: source target replaceWith
--} 
+-}
 replaceInString :: String -> StringReplacer -> String
 replaceInString [] _ = []
 replaceInString (x:xs) (target,with)
@@ -110,3 +110,13 @@ indexedReverse (x:xs) = (l + 1, x):(indexedReverse xs)
     ((l, _):_) = indexedReverse xs
 
 indexed xs = reverse (indexedReverse (reverse xs))
+
+removeAll :: (Eq a) => a -> [a] -> [a]
+removeAll _ [] = []
+removeAll t (x:xs)
+  | t == x = removeAll t xs
+  | otherwise = x:(removeAll t xs)
+
+dedup :: (Eq a) => [a] -> [a]
+dedup [] = []
+dedup (x:xs) = x:(removeAll x xs)

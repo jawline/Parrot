@@ -6,6 +6,7 @@ import Util
 import CopyDirectory
 import Meta
 import Paths
+import Templates (rewriteTemplates)
 import ImageTemplates (transformImages)
 import System.FSNotify
 import Control.Concurrent (threadDelay)
