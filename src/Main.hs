@@ -35,22 +35,9 @@ emitArticle outputDir template total (index, filename) = do
   writeFile outfile article
   return (title, intro, date, tags)
 
-removePathRecursive path = do
-  isDir <- doesDirectoryExist path
-  if' isDir (removeContentsRecursive path) (removeFile path)
-
-removeContentsRecursive path = do
-  cont <- listDirectory path
-  traverse removePathRecursive [path </> x | x <- cont]
-  return ()
-
-if' :: Bool -> a -> a -> a
-if' True  x _ = x
-if' False _ y = y
-
 setupDirectory output = do
   exists <- (doesDirectoryExist output)
-  if' exists (removeContentsRecursive output) (createDirectory output)
+  when (not exists) $ (createDirectory output)
 
 writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList outputLists total (index, listname) listitems template itemTemplate = do
@@ -105,21 +92,6 @@ transformDirectory input output = do
   where
     templates = (inputTemplates input)
 
--- Repeatedly watches inputDirectory and transforms the source each time it changes
-watchJob input output =
-  withManager $ \mgr -> do
-    watchTree
-      mgr
-      (inputRoot input)
-      (const True) -- Const ignores the contents
-      triggerTransform
-    forever $ threadDelay 1000000
-  where
-    triggerTransform event = do
-      putStrLn ("[+] Transform because of change to " ++ (show event))
-      transformDirectory input output
-      return ()
-
 main = do
 
   putStrLn "[+] Finding Targets"
@@ -139,6 +111,5 @@ main = do
   _ <- setupDirectory (lists output)
 
   _ <- transformDirectory input output
-  _ <- watchJob input output
 
   putStrLn "[+] Done"

@@ -24,3 +24,11 @@ executable Parrot
   build-depends:       base >=4.13 && <4.14, directory, filepath >= 1.4, time >= 1.9, fsnotify >= 0.3.0 && < 0.4.0, transformers >= 0.5.6
   hs-source-dirs: src/
   default-language:    Haskell2010
+
+executable ParrotWatch
+  main-is:             Watcher.hs
+  other-modules: 
+  -- other-extensions:
+  build-depends:       base >=4.13 && <4.14, directory, filepath >= 1.4, time >= 1.9, fsnotify >= 0.3.0 && < 0.4.0, transformers >= 0.5.6, process >= 1.6.8 && < 1.7
+  hs-source-dirs: src/
+  default-language:    Haskell2010

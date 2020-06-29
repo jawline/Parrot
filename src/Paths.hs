@@ -47,6 +47,6 @@ outputDirectories root = OutputDirectories {
   root=root,
   articles=root </> "articles",
   images=root </> "images",
-  lists=root </>  "lists",
+  lists=root </>  "list",
   index=root </> "index" <.> "html"
 }

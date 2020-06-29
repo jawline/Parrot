@@ -5,6 +5,10 @@ import Data.Time.Clock.POSIX
 import Data.Time.Clock
 import Data.Time.Format
 
+if' :: Bool -> a -> a -> a
+if' True  x _ = x
+if' False _ y = y
+
 input :: IO String
 input = do
   c <- tryIOError getChar
