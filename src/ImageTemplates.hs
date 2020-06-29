@@ -17,7 +17,7 @@ data ImageExpectation = ImageExpectation {
 
 substitutes :: Char -> Char
 substitutes ' ' = '_'
-substitutes '.' = '.'
+substitutes '.' = '_'
 substitutes x = toLower x
 
 imageExpectationFilename :: ImageExpectation -> FilePath
@@ -29,7 +29,7 @@ type Images = [FilePath]
 transformImages :: FilePath -> ImageExpectations -> IO ()
 transformImages imageSource expectations = do
   let a = Original
-  let b = Scaled 0.3
+  let b = Scaled 53.34
   putStrLn (imageExpectationFilename ImageExpectation { name="hello", size=a })
   putStrLn (imageExpectationFilename ImageExpectation { name="bye", size=b })
   return ()
