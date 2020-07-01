@@ -7,7 +7,7 @@ import CopyDirectory
 import Meta
 import Paths
 import Templates (rewriteTemplates)
-import ImageTemplates (transformImages)
+import ImageTemplates (transformImages, rewriteImageTemplates)
 import System.FSNotify
 import Control.Concurrent (threadDelay)
 import Control.Monad (forever)
@@ -28,12 +28,14 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source (".md",".html")
 
-emitArticle :: FilePath -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
-emitArticle outputDir template total (index, filename) = do
+emitArticle :: OutputDirectories -> String -> Int -> (Int, FilePath) -> IO ArticleInfo
+emitArticle output template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
+
   source <- readFile filename
+  let (source, imageExpectations) = rewriteImageTemplates (images output) source
   let (article, info) = transformArticle template source
-  let outfile = outputDir </> titleToFilename (articleTitle info) <.> "html"
+  let outfile = (articles output) </> titleToFilename (articleTitle info) <.> "html"
   writeFile outfile article
   return info
 
@@ -79,7 +81,7 @@ transformDirectory input output = do
   putStrLn "[+] Converting Articles"
 
   all <- getAllMarkdown (inputArticles input)
-  articleInfo <- mapM (emitArticle (articles output) articleTemplate (length all)) (indexed all)
+  articleInfo <- mapM (emitArticle output articleTemplate (length all)) (indexed all)
 
   putStrLn "[+] Generating Lists"
 
