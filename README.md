@@ -56,13 +56,16 @@ A parrot website is split up into four component folders:
 __NOTE:__ The list of lists is automatically generated from the articles, and
 is not manually curated.
 
-### Template Strings
+## Template Strings
 
-Content is substituted into templates and articles through template strings
-in the form `${{{string}}}`. Template strings can be constants, such as
-`${{{ARTICLE_CONTENT}}}` in the article template, or dynamic, such as
-`${{{img:expose.png}}}` which instructs Parrot to generate a web-optimized
-version of expose.png.
+Principally Parrot operates by systematically substituting template strings,
+constant or dynamic lookups from the website state, into templates in order to
+construct HTML webpages for all of the articles, and lists of the website, as
+well as the landing page. Content is substituted into templates and articles
+through template strings in the form `${{{string}}}`. Template strings can
+be constants, such as `${{{ARTICLE_CONTENT}}}` in the article template, or
+dynamic, such as `${{{img:expose.png}}}` which instructs Parrot to generate
+a web-optimized version of expose.png.
 
 #### Index Template
 
