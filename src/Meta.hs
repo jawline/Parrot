@@ -1,5 +1,6 @@
 module Meta where
 import Util
+import ImageTemplates (ImageExpectation)
 
 extractTitle :: String -> String
 extractTitle source = trim (drop (length prelude) (findLine prelude source))
@@ -35,12 +36,17 @@ mergeTag :: String -> String -> String
 mergeTag next current = if (length current) == 0 then next else current ++ ", " ++ next
 mergeTags tags = foldr mergeTag "" tags
 
-type ArticleInfo = (String, String, Float, [String])
-extractMetadata :: String -> ArticleInfo
-extractMetadata source = (title, info, date, tags)
-  where
-    title = extractTitle source
-    info = extractIntroduction source
-    date = extractDate source
-    tags = extractTags source
-        
+data ArticleInfo = ArticleInfo {
+  articleTitle :: String,
+  articleIntro :: String,
+  articleDate :: Float,
+  articleTags :: [String],
+  articleImages :: [ImageExpectation]
+}
+
+extractMetadata source = ArticleInfo {
+  articleTitle=extractTitle source,
+  articleIntro=extractIntroduction source,
+  articleDate=extractDate source,
+  articleTags=extractTags source
+}

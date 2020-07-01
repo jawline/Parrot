@@ -28,14 +28,14 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source (".md",".html")
 
-emitArticle :: FilePath -> String -> Int -> (Int, FilePath) -> IO ArticleInfo
+emitArticle :: FilePath -> String -> Int -> (Int, FilePath) -> IO ArticleInfo 
 emitArticle outputDir template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
   source <- readFile filename
-  let (article, (title, intro, date, tags)) = transformArticle template source
-  let outfile = outputDir </> titleToFilename title <.> "html"
+  let (article, info) = transformArticle template source
+  let outfile = outputDir </> titleToFilename (articleTitle info) <.> "html"
   writeFile outfile article
-  return (title, intro, date, tags)
+  return info
 
 setupDirectory output = do
   exists <- (doesDirectoryExist output)
@@ -46,7 +46,6 @@ writeList outputLists total (index, listname) listitems template itemTemplate = 
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
   writeFile (outputLists </> listname <.> ".html") (multiReplaceInString template replacers)
     where
-      articleDate (_, _, date, _) = date
       sortedItems = reverse (sortOn articleDate listitems)
       formattedItems = (map (transformListItem itemTemplate) sortedItems)
       replacers = [("{{{LIST_TITLE}}}",listname),("{{{LIST_CONTENT}}}",(foldr (++) "" formattedItems))]
@@ -84,7 +83,6 @@ transformDirectory input output = do
 
   putStrLn "[+] Generating Lists"
 
-  let articleTags (_, _, _, tags) = tags
   let listNames = unique (foldr (\l1 r1 -> (articleTags l1) ++ r1) [] articleInfo)
 
   _ <- mapM_ (\(i, x) -> writeList (lists output) (length listNames) (i, x) (filter (\y -> elem x (articleTags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)

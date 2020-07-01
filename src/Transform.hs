@@ -28,11 +28,11 @@ transformMarkdown xs =
 {-|
   The series of string replacements that transform the template article to a rendered article
 -}
-articleReplacements source (title, _, date, tags) = [
+articleReplacements source info = [
   ("{{{ARTICLE_CONTENT}}}", source),
-  ("{{{ARTICLE_TITLE}}}", title),
-  ("{{{ARTICLE_TIME}}}", showTime date),
-  ("{{{ARTICLE_TAGS}}}", mergeTags tags)]
+  ("{{{ARTICLE_TITLE}}}", articleTitle info),
+  ("{{{ARTICLE_TIME}}}", showTime (articleDate info)),
+  ("{{{ARTICLE_TAGS}}}", mergeTags (articleTags info))]
 
 
 {-|
@@ -50,12 +50,12 @@ transformArticle template source = (finalContent, articleInfo)
   The template string replacements for list items
 -}
 listItemReplacements :: ArticleInfo -> [StringReplacer]
-listItemReplacements (title, intro, date, tags) =
-  [("{{{LI_NAME}}}", title),
-   ("{{{LI_DESCRIPTION}}}", intro),
-   ("{{{LI_DATE}}}", showTime date),
-   ("{{{LI_TAGS}}}", mergeTags tags),
-   ("{{{LI_TARGET}}}", (templateArticlesPath </> (titleToFilename title)))]
+listItemReplacements info =
+  [("{{{LI_NAME}}}", articleTitle info),
+   ("{{{LI_DESCRIPTION}}}", articleIntro info),
+   ("{{{LI_DATE}}}", showTime (articleDate info)),
+   ("{{{LI_TAGS}}}", mergeTags (articleTags info)),
+   ("{{{LI_TARGET}}}", (templateArticlesPath </> (titleToFilename (articleTitle info))))]
 
 {-|
   Translates the list item template and an ArticleInfo instance into a list item HTML fragment.

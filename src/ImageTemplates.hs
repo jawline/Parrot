@@ -4,6 +4,7 @@ import System.Directory
 import Data.Char (toLower)
 import Graphics.Image
 import Util (dedup)
+import Templates (rewriteTemplates, defaultExtractTemplateString)
 
 -- Data type represents the possible transformations for a source image.
 data ExpectedSize = Original
@@ -68,3 +69,14 @@ transformImages :: FilePath -> FilePath -> [ImageExpectation] -> IO ()
 transformImages imageSource imageDest expectations = do
   mapM_ (\x -> transformExpectation imageSource imageDest x) (dedup expectations)
   return ()
+
+imgTemplateStart ('$':'{':'{':'{':'i':'m':'g':':':xs) = Just xs
+imgTemplateStart _ = Nothing
+
+imgTemplateRewriter :: String -> String -> (String, [ImageExpectation])
+imgTemplateRewriter hostedImagesPath templateString = (hostedImagesPath </> (imageExpectationFilename expectation), [expectation])
+  where
+    expectation = ImageExpectation { name=templateString, size=QualityHigh }
+
+rewriteImageTemplates :: String -> String -> (String, [ImageExpectation])
+rewriteImageTemplates hostedImagesPath source = rewriteTemplates imgTemplateStart defaultExtractTemplateString (imgTemplateRewriter hostedImagesPath) source
