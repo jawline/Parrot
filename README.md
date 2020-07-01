@@ -20,10 +20,35 @@ NOTE: Parrot will re-use existing directories, which can cause file litter. It i
 
 ## Design
 
+Parrot is an opinionated static website generation tool that builds a website
+from articles (pages of content), and lists (collections of articles). Articles
+are expressed in markdown and include metadata in-line using a special
+syntax. This meta-data includes the article title, date, tags (the lists to
+which the article belongs), and an introduction (a short text at the beginning
+of the article that will be used when referrencing the article). Articles
+and lists are converted into webpages through substitution into templates,
+HTML skeletons for each component, which also give the website its visual feel.
+
+Parrot does not take responsibility for the design of the index page, since for
+many websites this is a bespoke piece of content with lots of specific styling,
+but it does apply it's template string replacement engine to the index page
+which allows for linking to articles and automatic web-optimization of images.
+
+Likewise, the navigation bar is not automatically generated, since developers
+often want precise control of the entries, but is split into its own HTML
+template which is loaded into every page that requres it. Again template
+strings can reference articles, simplifying linking and changing paths.
+
+A parrot website is split up into four component folders:
+- `templates/`: the HTML templates which will be used to construct the index page, articles, lists, and the navigation bar.
+- `static/`: the static resources which will be copied as-is into the root of every website to allow for things like JavaScript and CSS dependencies.
+- `articles/`: The markdown articles for the website.
+- `images/`: The images which can be referred to by any template or article using image template strings.
+
+NOTE: The list of lists is automatically generated from the articles, and
+is not manually curated.
+
 ### Templating
 
 ### Images, Image Templating, and Resizing
 
-### Photo Gallery
-
-[TODO: Fill this in once the photo gallery extension is finished]
