@@ -16,11 +16,12 @@ isParagraphEnd n = False
 transformParagraphInt :: String -> (String, String)
 transformParagraphInt [] = ([], [])
 transformParagraphInt (x:xs)
-  | isParagraphEnd (x:xs) = ([], xs)
-  | isInlineCodeStart x = combine (transformInlineCode xs)
-  | Just (linkContent, remaining) <- transformLink xs = combine (linkContent, remaining)
+  | isParagraphEnd rest = ([], rest)
+  | Just codeResult <- transformInlineCode rest = combine codeResult
+  | Just linkResult <- transformLink rest = combine linkResult
   | otherwise = combine ([x], xs)
   where
+    rest = (x:xs)
     combine (content, rest) = let (lfollow, rfollow) = transformParagraphInt rest
       in (content ++ lfollow, rfollow)
 

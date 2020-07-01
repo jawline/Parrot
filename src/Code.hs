@@ -9,12 +9,15 @@ isInlineCodeEnd ('`':xs) = True
 isInlineCodeEnd _ = False
 
 transformInlineCodeInt :: String -> Maybe (String, String)
-transformInlineCodeInt xs = readToNext xs isInlineCodeEnd 
+transformInlineCodeInt xs = readToNext xs isInlineCodeEnd
 
-transformInlineCode :: String -> (String, String)
-transformInlineCode xs = case (transformInlineCodeInt xs) of
-  Just (line, remaining) -> ("<span><code>" ++ line ++ "</code></span>", remaining)
-  Nothing -> error "No end to inline block"
+transformInlineCode :: String -> Maybe (String, String)
+transformInlineCode xs
+  | (x:xs) <- xs,
+    isInlineCodeStart x,
+    Just (line, remaining) <- transformInlineCodeInt xs
+  = Just ("<span><code>" ++ line ++ "</code></span>", remaining)
+  | otherwise = Nothing
 
 isCodeEnd :: String -> Bool
 isCodeEnd ('`':'`':'`':xs) = True
