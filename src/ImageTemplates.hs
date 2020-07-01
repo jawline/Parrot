@@ -68,7 +68,6 @@ transformExpectation imageRoot outputDir expectation = do
   putStrLn $ "[+] Transforming " ++ filename
   file <- readImageRGBA VU (imageRoot </> (name expectation) <.> (fileType expectation))
   let newDims = decideShape (dims file) (size expectation)
-  putStrLn $ show newDims
   writeImage filename $ resize Bilinear Edge newDims file
   return ()
 
@@ -83,8 +82,8 @@ imgTemplateStart _ = Nothing
 
 nameAndType filePath = (dropExtension filePath, takeExtension filePath)
 
-imgTemplateRewriter :: String -> String -> (String, [ImageExpectation])
-imgTemplateRewriter hostedImagesPath templateString = (hostedImagesPath </> (imageExpectationFilename expectation), [expectation])
+imgTemplateRewriter :: String -> String -> Maybe (String, [ImageExpectation])
+imgTemplateRewriter hostedImagesPath templateString = Just (hostedImagesPath </> (imageExpectationFilename expectation), [expectation])
   where
     (name, fileType) = nameAndType templateString
     expectation = ImageExpectation { name=name, fileType=fileType, size=QualityHigh }

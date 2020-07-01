@@ -1,7 +1,7 @@
 module Templates where
 
 -- A template processor is a function which takes a template string and returns what it should appear as in the emitted text plus any additional state
-type TemplateProcessor a = String -> (String, [a])
+type TemplateProcessor a = String -> Maybe (String, [a])
 type TemplateStart = String -> Maybe String
 type TemplateExtract = String -> (String, String)
 
@@ -30,16 +30,15 @@ images referenced during templating so that images can be web-optimized
 only if they are used in text.
 -}
 rewriteTemplates _ _ _ [] = ([], [])
-rewriteTemplates templateStart extractTemplate rewriter xs =
-  case (templateStart xs) of
-    Just startString -> let
-      (templateStr, rest) = extractTemplate startString
-      (rewritten, taggedData) = rewriter templateStr
-      (follows, taggedFollowing) = rewriteMe rest
-      in (rewritten ++ follows, taggedData ++ taggedFollowing)
-    Nothing -> let
-        (y:ys) = xs
-        (follows, taggedFollows) = rewriteMe ys
-      in (y:follows, taggedFollows)
+rewriteTemplates templateStart extractTemplate rewriter xs
+  | xs == [] = ([], [])
+  | Just startString <- templateStart xs,
+    (templateStr, rest) <- extractTemplate startString,
+    Just (rewritten, taggedData) <- rewriter templateStr,
+    (follows, taggedFollowing) <- rewriteMe rest
+    = (rewritten ++ follows, taggedData ++ taggedFollowing)
+  | (y:ys) <- xs,
+    (follows, taggedFollows) <- rewriteMe ys
+    = (y:follows, taggedFollows)
   where
     rewriteMe = rewriteTemplates templateStart extractTemplate rewriter
