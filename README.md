@@ -18,6 +18,14 @@ __NOTE:__ If the output directory does not exist Parrot will create it, but it w
 
 __NOTE:__ Parrot will re-use existing directories, which can cause file litter. It is best to create a fresh directory for builds.
 
+## Definitions
+
+[TODO]
+
+## Creating New Articles
+
+[TODO]
+
 ## Design
 
 Parrot is an opinionated static website generation tool that builds a website
@@ -79,7 +87,7 @@ List templates form the skeleton of the article lists, which allow viewers to br
 The overall list template is responsible for the list page theme and the placement of list items within it. It supports the following template strings:
 - `NAV_BAR_CONTENT`: The content of the navigation bar.
 - `LIST_TITLE`: The title of the list being viewed.
-- `LIST_CONTENT`: Each item included in this list will be rendered into a list_item template and then included in the LIST_CONTENT.
+- `LIST_CONTENT`: Each item included in this list will be rendered into a list_item template and then included in the `LIST_CONTENT`.
 
 The list item is the skeleton HTML for a single entry into the list. It includes the following template strings:
 - `LI_NAME`: The name of the article being referenced.
@@ -89,12 +97,17 @@ The list item is the skeleton HTML for a single entry into the list. It includes
 
 #### Linking to lists
 
-TODO
+[TODO]
 
 #### Linking to articles
 
-TODO
+[TODO]
 
 #### Images, Image Templating, and Resizing
 
-TODO
+Parrot can automatically images requested through template strings to desired sizes while building a website. Image template strings come in the form `${{{img:image_name.filetype}}}` and the image is expected to be in a subdirectory of the `images/` path of the source site.
+
+By default, images will be resized to the high resolution setting of Parrot, but this can be overwritten in the image template string. These are the possible overrides:
+- `${{{img:filename.filetype:original}}}`: keep the current image settings.
+- `${{{img:filename.filetype:high}}}`: Use the high quality Parrot setting.
+- `${{{img:filename.filetype:thumb}}}`: Use the thumbnail parrot setting.
