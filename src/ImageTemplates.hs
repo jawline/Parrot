@@ -59,7 +59,7 @@ decideShape (a, b) (ScaledToHeight x) = scaleBy (a, b) scalar
   where
     scalar = x / (fromIntegral b)
 decideShape dims QualityThumb = makeLargestDimension 100 dims
-decideShape dims QualityHigh = makeLargestDimension 400 dims 
+decideShape dims QualityHigh = makeLargestDimension 300 dims
 
 -- Transforms a given file expectation (and source file) to a output image
 transformExpectation :: FilePath -> FilePath -> ImageExpectation -> IO ()

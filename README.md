@@ -48,7 +48,53 @@ A parrot website is split up into four component folders:
 __NOTE:__ The list of lists is automatically generated from the articles, and
 is not manually curated.
 
-### Templating
+### Template Strings
 
-### Images, Image Templating, and Resizing
+Content is substituted into templates and articles through template strings
+in the form `${{{string}}}`. Template strings can be constants, such as
+`${{{ARTICLE_CONTENT}}}` in the article template, or dynamic, such as
+`${{{img:expose.png}}}` which instructs Parrot to generate a web-optimized
+version of expose.png.
 
+#### Index Template
+
+The index template is used to construct the website index (or landing)
+page, the first page users will see when visiting a site. The index template
+is largely left to the developer, but supports image template strings and
+`${{{NAV_BAR_CONTENT}}}`.
+
+#### Article Template
+
+The article template is used as the skeleton for each article, and template strings are used to include the content as each article is generated. The supported template strings are:
+- `NAV_BAR_CONTENT`: For the navigation bar.
+- `ARTICLE_TITLE`: The title of the article being rendered.
+- `ARTICLE_CONTENT`: The converted content of the article markdown file.
+- `ARTICLE_TAGS`: The lists to which this article belongs, extracted from the markdown metadata.
+- `ARTICLE_TIME`: The time when this article was created, extracted from the markdown metadata.
+
+#### List Template
+
+List templates form the skeleton of the article lists, which allow viewers to browse through lists of similar content and can be linked to. List templates are split into two components, the overall list template and the list item template.
+
+The overall list template is responsible for the list page theme and the placement of list items within it. It supports the following template strings:
+- `NAV_BAR_CONTENT`: The content of the navigation bar.
+- `LIST_TITLE`: The title of the list being viewed.
+- `LIST_CONTENT`: Each item included in this list will be rendered into a list_item template and then included in the LIST_CONTENT.
+
+The list item is the skeleton HTML for a single entry into the list. It includes the following template strings:
+- `LI_NAME`: The name of the article being referenced.
+- `LI_DESCRIPTION`: The short description of the article extracted from the article metadata.
+- `LI_TAGS`: The list of tags (lists) that this article belongs to, extracted from the article metadata.
+- `LI_DATE`: The time that this article was created, which is extracted from the article metadata.
+
+#### Linking to lists
+
+TODO
+
+#### Linking to articles
+
+TODO
+
+#### Images, Image Templating, and Resizing
+
+TODO
