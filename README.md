@@ -14,9 +14,9 @@ To build the included sample website execute: `cabal run Parrot -- ./examples/sa
 
 To automatically rebuild the website whenever a source file or Parrot's source code changes use: `cabal run ParrotWatch -- ./examples/sample_site ./out/'
 
-NOTE: If the output directory does not exist Parrot will create it, but it will not create the directory recursively. For example, given an empty directory `/var/`, `cabal run Parrot -- source/ /var/html` will work correctly but `cabal run Parrot -- source/ /var/html/www/` will not.
+__NOTE:__ If the output directory does not exist Parrot will create it, but it will not create the directory recursively. For example, given an empty directory `/var/`, `cabal run Parrot -- source/ /var/html` will work correctly but `cabal run Parrot -- source/ /var/html/www/` will not.
 
-NOTE: Parrot will re-use existing directories, which can cause file litter. It is best to create a fresh directory for builds.
+__NOTE:__ Parrot will re-use existing directories, which can cause file litter. It is best to create a fresh directory for builds.
 
 ## Design
 
@@ -45,7 +45,7 @@ A parrot website is split up into four component folders:
 - `articles/`: The markdown articles for the website.
 - `images/`: The images which can be referred to by any template or article using image template strings.
 
-NOTE: The list of lists is automatically generated from the articles, and
+__NOTE:__ The list of lists is automatically generated from the articles, and
 is not manually curated.
 
 ### Templating
