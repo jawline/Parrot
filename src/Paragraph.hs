@@ -18,9 +18,7 @@ transformParagraphInt [] = ([], [])
 transformParagraphInt (x:xs)
   | isParagraphEnd (x:xs) = ([], xs)
   | isInlineCodeStart x = combine (transformInlineCode xs)
-  | isStartOfLink x = case (transformLink xs) of
-    Just d -> combine d
-    Nothing -> combine ([x], xs)
+  | Just (linkContent, remaining) <- transformLink xs = combine (linkContent, remaining)
   | otherwise = combine ([x], xs)
   where
     combine (content, rest) = let (lfollow, rfollow) = transformParagraphInt rest

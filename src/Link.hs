@@ -1,19 +1,34 @@
 module Link where
 import Util
 
-isStartOfLink :: Char -> Bool
-isStartOfLink '[' = True
-isStartOfLink n = False
+isStartOfLink :: String -> Maybe String
+isStartOfLink ('[':xs) = Just xs
+isStartOfLink _ = Nothing
 
-readLinkText  xs = (readToNext xs (\(x:_) -> x == ']'))
+isStartOfImage :: String -> Maybe String
+isStartOfImage ('!':'[':xs) = Just xs
+isStartOfImage _ = Nothing
+
+readLinkText xs = (readToNext xs (\(x:_) -> x == ']'))
 readLinkUrl xs = (readToNext xs (\(x:_) -> x == ')'))
 
+internalLinkTransformer rewriter xs
+  | Just (linkText, afterUrl) <- readLinkText xs,
+    ('(':afterLParen) <- afterUrl,
+    Just (linkUrl, remaining) <- readLinkUrl (afterLParen)
+  = Just (rewriter linkText linkUrl, remaining)
+  | otherwise = Nothing
+
+transformLinkInt = internalLinkTransformer (\linkText linkUrl -> "<a href=\"" ++ linkUrl ++ "\">" ++ linkText ++ "</a>")
+transformImageInt = internalLinkTransformer (\linkText linkUrl -> "<img src=\"" ++ linkUrl ++ "\"/>")
+
+{-| Transform images ![Description]{URL} and links [Description test]{URL}
+from markdown to HTML.
+
+If head of string is a link then return the translated link + the remaining unprocessed markdown, otherwise return Nothing.
+-}
 transformLink :: String -> Maybe (String, String)
-transformLink xs = case (readLinkText xs) of
-    Just (linkText, afterUrl) ->
-      case afterUrl of
-        ('(':afterLParen) -> case (readLinkUrl afterLParen) of
-          Just (linkUrl, remaining) -> Just ("<a href=\"" ++ linkUrl ++ "\">" ++ linkText ++ "</a>", remaining)
-          Nothing -> Nothing
-        otherwise -> Nothing
-    Nothing -> Nothing
+transformLink xs
+  | Just(imageContent) <- isStartOfImage xs = transformImageInt imageContent
+  | Just(linkContent) <- isStartOfLink xs = transformLinkInt linkContent
+  | otherwise = Nothing
