@@ -3,7 +3,7 @@ import System.FilePath
 import System.Directory
 import Data.Char (toLower)
 import Graphics.Image
-import Util (dedup)
+import Util (dedup, if')
 import Templates (rewriteTemplates, defaultExtractTemplateString)
 
 -- Data type represents the possible transformations for a source image.
@@ -41,6 +41,13 @@ scaleBy (a, b) scalar = roundDims (((fromIntegral a) * scalar), ((fromIntegral b
 -- Convert integral dimension to floating dimensions
 toFloating (a, b) = (fromIntegral a, fromIntegral b)
 
+minArea (w1, h1) (w2, h2) = if' ((w1 * h1) > (w2 * h2)) (w2, h2) (w1, h1)
+
+makeLargestDimension x dims = minArea scaledWidth scaledHeight
+  where
+    scaledWidth = decideShape dims (ScaledToWidth x)
+    scaledHeight = decideShape dims (ScaledToHeight x)
+
 -- Given the current dimensions and the expected shape calculate the new dimensions
 decideShape (a, b) (Fixed x y) = (x, y)
 decideShape (a, b) (Scaled x) = roundDims (a' * x, b' * x)
@@ -51,8 +58,8 @@ decideShape (a, b) (ScaledToWidth x) = scaleBy (a, b) scalar
 decideShape (a, b) (ScaledToHeight x) = scaleBy (a, b) scalar
   where
     scalar = x / (fromIntegral b)
-decideShape dims QualityThumb = decideShape dims (ScaledToWidth 100)
-decideShape dims QualityHigh = decideShape dims (ScaledToWidth 400)
+decideShape dims QualityThumb = makeLargestDimension 100 dims
+decideShape dims QualityHigh = makeLargestDimension 400 dims 
 
 -- Transforms a given file expectation (and source file) to a output image
 transformExpectation :: FilePath -> FilePath -> ImageExpectation -> IO ()
