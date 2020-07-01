@@ -19,7 +19,7 @@ extra-source-files:  CHANGELOG.md
 
 executable Parrot
   main-is:             Main.hs
-  other-modules: Code CopyDirectory Header Link List Meta Paragraph Paths Transform Util ImageTemplates
+  other-modules: Code CopyDirectory Header Link List Meta Paragraph Paths Transform Util Templates ImageTemplates
   -- other-extensions:
   build-depends:       base >=4.13 && <4.14, directory, filepath >= 1.4, time >= 1.9, fsnotify >= 0.3.0 && < 0.4.0, transformers >= 0.5.6, hip >= 1.5 && < 1.6
   hs-source-dirs: src/

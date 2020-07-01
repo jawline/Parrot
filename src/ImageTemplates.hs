@@ -19,6 +19,7 @@ data ExpectedSize = Original
 -- An image 'expectation' includes the expected filename and dimensions or scaling factor
 data ImageExpectation = ImageExpectation {
   name :: String,
+  fileType :: String,
   size :: ExpectedSize
 } deriving (Show, Eq)
 
@@ -29,7 +30,7 @@ substitutes '.' = '_'
 substitutes x = toLower x
 
 imageExpectationFilename :: ImageExpectation -> FilePath
-imageExpectationFilename expectation = (name expectation) ++ "_" ++ (Prelude.map substitutes (show (size expectation)))
+imageExpectationFilename expectation = ((name expectation) ++ "_" ++ (Prelude.map substitutes (show (size expectation)))) <.> (fileType expectation)
 
 -- Round floating dimensions to integers
 roundDims (a, b) = (round a, round b)
@@ -56,9 +57,9 @@ decideShape dims QualityHigh = decideShape dims (ScaledToWidth 400)
 -- Transforms a given file expectation (and source file) to a output image
 transformExpectation :: FilePath -> FilePath -> ImageExpectation -> IO ()
 transformExpectation imageRoot outputDir expectation = do
-  let filename = outputDir </> (imageExpectationFilename expectation) <.> "png"
+  let filename = outputDir </> (imageExpectationFilename expectation)
   putStrLn $ "[+] Transforming " ++ filename
-  file <- readImageRGBA VU (imageRoot </> (name expectation) <.> "png")
+  file <- readImageRGBA VU (imageRoot </> (name expectation) <.> (fileType expectation))
   let newDims = decideShape (dims file) (size expectation)
   putStrLn $ show newDims
   writeImage filename $ resize Bilinear Edge newDims file
@@ -73,10 +74,13 @@ transformImages imageSource imageDest expectations = do
 imgTemplateStart ('$':'{':'{':'{':'i':'m':'g':':':xs) = Just xs
 imgTemplateStart _ = Nothing
 
+nameAndType filePath = (dropExtension filePath, takeExtension filePath)
+
 imgTemplateRewriter :: String -> String -> (String, [ImageExpectation])
 imgTemplateRewriter hostedImagesPath templateString = (hostedImagesPath </> (imageExpectationFilename expectation), [expectation])
   where
-    expectation = ImageExpectation { name=templateString, size=QualityHigh }
+    (name, fileType) = nameAndType templateString
+    expectation = ImageExpectation { name=name, fileType=fileType, size=QualityHigh }
 
 rewriteImageTemplates :: String -> String -> (String, [ImageExpectation])
 rewriteImageTemplates hostedImagesPath source = rewriteTemplates imgTemplateStart defaultExtractTemplateString (imgTemplateRewriter hostedImagesPath) source

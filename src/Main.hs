@@ -7,7 +7,7 @@ import CopyDirectory
 import Meta
 import Paths
 import Templates (rewriteTemplates)
-import ImageTemplates (transformImages, rewriteImageTemplates)
+import ImageTemplates (transformImages, rewriteImageTemplates, ImageExpectation)
 import System.FSNotify
 import Control.Concurrent (threadDelay)
 import Control.Monad (forever)
@@ -28,16 +28,17 @@ getAllMarkdown root = do
 rewriteSuffix :: String -> String
 rewriteSuffix source = replaceInString source (".md",".html")
 
-emitArticle :: OutputDirectories -> String -> Int -> (Int, FilePath) -> IO ArticleInfo
+emitArticle :: OutputDirectories -> String -> Int -> (Int, FilePath) -> IO (ArticleInfo, [ImageExpectation])
 emitArticle output template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
 
   source <- readFile filename
-  let (source, imageExpectations) = rewriteImageTemplates (images output) source
-  let (article, info) = transformArticle template source
+  let (source', imageExpectations) = rewriteImageTemplates (relativeImages output) source
+  putStrLn $ "[" ++ (show (index + 1)) ++ "] dependencies: " ++ (show imageExpectations)
+  let (article, info) = transformArticle template source'
   let outfile = (articles output) </> titleToFilename (articleTitle info) <.> "html"
   writeFile outfile article
-  return info
+  return (info, imageExpectations)
 
 setupDirectory output = do
   exists <- (doesDirectoryExist output)
@@ -52,23 +53,38 @@ writeList outputLists total (index, listname) listitems template itemTemplate = 
       formattedItems = (map (transformListItem itemTemplate) sortedItems)
       replacers = [("{{{LIST_TITLE}}}",listname),("{{{LIST_CONTENT}}}",(foldr (++) "" formattedItems))]
 
-templateWithNav navTemplate filename = do
+templateBase output filename = do
   template <- readFile filename
-  return (replaceInString template ("{{{NAV_BAR_CONTENT}}}",navTemplate))
+  return (rewriteImageTemplates (relativeImages output) template)
+
+templateWithNav output navTemplate filename = do
+  (template, imgs) <- templateBase output filename
+  return (replaceInString template ("{{{NAV_BAR_CONTENT}}}",navTemplate), imgs)
+
+allTemplates input output = do
+  (navTemplate, navImg) <- templateBase output (templateNav templates)
+  (indexTemplate, indexImg) <- templateWithNav output navTemplate (templateIndex templates)
+  (articleTemplate, articleImg) <- templateWithNav output navTemplate (templateArticle templates)
+  (listTemplate, listImg) <- templateWithNav output navTemplate (templateList templates)
+  (listItemTemplate, liImg) <- templateBase output (templateListItem templates)
+  return ((indexTemplate, articleTemplate, listTemplate, listItemTemplate, navTemplate), navImg ++ indexImg ++ articleImg ++ listImg ++ liImg)
+  where
+    templates = inputTemplates input 
 
 failArguments = do
   putStrLn "Incorrect Usage"
   putStrLn "Expected MDHS Source Output"
   exitWith (ExitFailure 1)
 
+mergeArticleExpectations articleData = foldr (\l r -> l ++ r) [] expected
+  where
+    expected = map(\(_, exp) -> exp) articleData
+
 transformDirectory input output = do
+
   putStrLn "[+] Reading Templates"
 
-  navTemplate <- readFile (templateNav templates)
-  indexTemplate <- templateWithNav navTemplate (templateIndex templates)
-  articleTemplate <- templateWithNav navTemplate (templateArticle templates)
-  listTemplate <- templateWithNav navTemplate (templateList templates)
-  listItemTemplate <- readFile (templateListItem templates)
+  ((indexTemplate, articleTemplate, listTemplate, listItemTemplate, navTemplate), expectedImages) <- allTemplates input output
 
   putStrLn "[+] Copying Statics"
 
@@ -81,7 +97,10 @@ transformDirectory input output = do
   putStrLn "[+] Converting Articles"
 
   all <- getAllMarkdown (inputArticles input)
-  articleInfo <- mapM (emitArticle output articleTemplate (length all)) (indexed all)
+  emitData <- mapM (emitArticle output articleTemplate (length all)) (indexed all)
+
+  let articleInfo = map (\(info, _) -> info) emitData
+  let articleImages = mergeArticleExpectations emitData
 
   putStrLn "[+] Generating Lists"
 
@@ -90,8 +109,8 @@ transformDirectory input output = do
   _ <- mapM_ (\(i, x) -> writeList (lists output) (length listNames) (i, x) (filter (\y -> elem x (articleTags y)) articleInfo) listTemplate listItemTemplate) (indexed listNames)
 
   putStrLn "[+] Translating Images"
-
-  transformImages (inputImages input) (images output) []
+  let expectedImages' = expectedImages ++ articleImages
+  transformImages (inputImages input) (images output) expectedImages'
 
   putStrLn ("[+] Finished Transforming " ++ (inputRoot input))
   return ()

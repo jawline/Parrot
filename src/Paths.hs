@@ -39,6 +39,7 @@ data OutputDirectories = OutputDirectories {
   root :: String,
   articles :: String,
   images :: String,
+  relativeImages :: String,
   lists :: String,
   index :: String
 }
@@ -47,6 +48,7 @@ outputDirectories root = OutputDirectories {
   root=root,
   articles=root </> "articles",
   images=root </> "images",
+  relativeImages = "/images",
   lists=root </>  "list",
   index=root </> "index" <.> "html"
 }

@@ -11,9 +11,9 @@ defaultTemplateStart _ = Nothing
 
 -- Extract the ... in ${{{ ... }}} for processing
 defaultExtractTemplateString ('}':'}':'}':xs) = ([], xs)
-defaultExtractTemplateString (x:xs) = (x:tfollow, rest)
+defaultExtractTemplateString (x:xs) = (x:extracted, rest)
   where
-    (tfollow, rest) = defaultExtractTemplateString xs
+    (extracted, rest) = defaultExtractTemplateString xs
 
 {-|
 A generic template rewriter. This tool rewrites strings in the form
@@ -39,7 +39,8 @@ rewriteTemplates templateStart extractTemplate rewriter xs =
       (follows, taggedFollowing) = rewriteMe rest
       in (rewritten ++ follows, taggedData ++ taggedFollowing)
     Nothing -> let
-      (follows, taggedFollows) = rewriteMe (tail xs)
-      in ((head xs):follows, taggedFollows)
+        (y:ys) = xs
+        (follows, taggedFollows) = rewriteMe ys
+      in (y:follows, taggedFollows)
   where
     rewriteMe = rewriteTemplates templateStart extractTemplate rewriter
