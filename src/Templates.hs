@@ -29,7 +29,6 @@ finished. One example use case for this utility is collecting all of the
 images referenced during templating so that images can be web-optimized
 only if they are used in text.
 -}
-rewriteTemplates :: (Eq a) => TemplateStart -> TemplateExtract -> TemplateProcessor a -> String -> (String, [a])
 rewriteTemplates _ _ _ [] = ([], [])
 rewriteTemplates templateStart extractTemplate rewriter xs =
   case (templateStart xs) of

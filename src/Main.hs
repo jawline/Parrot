@@ -7,6 +7,7 @@ import CopyDirectory
 import Meta
 import Paths
 import Templates (rewriteTemplates)
+import ConstantTemplates (constantRewrite, constantStaticTemplates)
 import ImageTemplates (transformImages, rewriteImageTemplates, ImageExpectation)
 import System.FSNotify
 import Control.Concurrent (threadDelay)
@@ -44,14 +45,19 @@ setupDirectory output = do
   exists <- (doesDirectoryExist output)
   when (not exists) $ (createDirectory output)
 
+writeListReplacers title content = [
+  (constantRewrite "LIST_TITLE" title),
+  (constantRewrite "LIST_CONTENT" content)]
+
 writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList outputLists total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
-  writeFile (outputLists </> listname <.> ".html") (multiReplaceInString template replacers)
+  writeFile (outputLists </> listname <.> ".html") rewritten
     where
       sortedItems = reverse (sortOn articleDate listitems)
-      formattedItems = (map (transformListItem itemTemplate) sortedItems)
-      replacers = [("{{{LIST_TITLE}}}",listname),("{{{LIST_CONTENT}}}",(foldr (++) "" formattedItems))]
+      formattedItems = map (transformListItem itemTemplate) sortedItems
+      replacers = writeListReplacers listname (foldr (++) "" formattedItems)
+      rewritten = constantStaticTemplates replacers template
 
 templateBase output filename = do
   template <- readFile filename
@@ -59,7 +65,9 @@ templateBase output filename = do
 
 templateWithNav output navTemplate filename = do
   (template, imgs) <- templateBase output filename
-  return (replaceInString template ("{{{NAV_BAR_CONTENT}}}",navTemplate), imgs)
+  return (constantStaticTemplates rewriteRules template, imgs)
+  where
+    rewriteRules = [(constantRewrite "NAV_BAR_CONTENT" navTemplate)]
 
 allTemplates input output = do
   (navTemplate, navImg) <- templateBase output (templateNav templates)
@@ -69,7 +77,7 @@ allTemplates input output = do
   (listItemTemplate, liImg) <- templateBase output (templateListItem templates)
   return ((indexTemplate, articleTemplate, listTemplate, listItemTemplate, navTemplate), navImg ++ indexImg ++ articleImg ++ listImg ++ liImg)
   where
-    templates = inputTemplates input 
+    templates = inputTemplates input
 
 failArguments = do
   putStrLn "Incorrect Usage"

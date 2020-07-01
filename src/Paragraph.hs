@@ -30,4 +30,4 @@ transformType elemname source = ("<" ++ elemname ++ ">" ++ (trim paragraph) ++ "
   where (paragraph, remaining) = (transformParagraphInt source)
 
 transformSpan = transformType "span"
-transformParagraph = transformType "p" 
+transformParagraph = transformType "p"

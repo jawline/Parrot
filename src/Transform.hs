@@ -8,6 +8,7 @@ import List
 import Code
 import Meta
 import Paths
+import ConstantTemplates (constantRewrite, constantStaticTemplates)
 
 {-|
   Transform a piece of markdown to a HTML fragment
@@ -29,10 +30,10 @@ transformMarkdown xs =
   The series of string replacements that transform the template article to a rendered article
 -}
 articleReplacements source info = [
-  ("{{{ARTICLE_CONTENT}}}", source),
-  ("{{{ARTICLE_TITLE}}}", articleTitle info),
-  ("{{{ARTICLE_TIME}}}", showTime (articleDate info)),
-  ("{{{ARTICLE_TAGS}}}", mergeTags (articleTags info))]
+  (constantRewrite "ARTICLE_CONTENT" source),
+  (constantRewrite "ARTICLE_TITLE"  (articleTitle info)),
+  (constantRewrite "ARTICLE_TIME" (showTime (articleDate info))),
+  (constantRewrite "ARTICLE_TAGS" (mergeTags (articleTags info)))]
 
 
 {-|
@@ -43,24 +44,24 @@ transformArticle template source = (finalContent, articleInfo)
   where
     articleInfo = extractMetadata source
     sourceHtml = transformMarkdown source
-    finalContent = multiReplaceInString template (articleReplacements (transformMarkdown source) articleInfo)
+    replacements = articleReplacements sourceHtml articleInfo
+    finalContent = constantStaticTemplates replacements template
 
 
 {-|
   The template string replacements for list items
 -}
-listItemReplacements :: ArticleInfo -> [StringReplacer]
 listItemReplacements info =
-  [("{{{LI_NAME}}}", articleTitle info),
-   ("{{{LI_DESCRIPTION}}}", articleIntro info),
-   ("{{{LI_DATE}}}", showTime (articleDate info)),
-   ("{{{LI_TAGS}}}", mergeTags (articleTags info)),
-   ("{{{LI_TARGET}}}", (templateArticlesPath </> (titleToFilename (articleTitle info))))]
+  [(constantRewrite "LI_NAME" (articleTitle info)),
+   (constantRewrite "LI_DESCRIPTION" (articleIntro info)),
+   (constantRewrite "LI_DATE" (showTime (articleDate info))),
+   (constantRewrite "LI_TAGS" (mergeTags (articleTags info))),
+   (constantRewrite "LI_TARGET" (templateArticlesPath </> (titleToFilename (articleTitle info))))]
 
 {-|
   Translates the list item template and an ArticleInfo instance into a list item HTML fragment.
 -}
 transformListItem :: String -> ArticleInfo -> String
-transformListItem template item = multiReplaceInString template replacements
+transformListItem template item = constantStaticTemplates replacements template
   where
     replacements = listItemReplacements item
