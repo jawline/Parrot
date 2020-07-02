@@ -38,17 +38,21 @@ inputDirectories root = InputDirectories {
 data OutputDirectories = OutputDirectories {
   root :: String,
   articles :: String,
+  relativeArticles :: String,
   images :: String,
   relativeImages :: String,
   lists :: String,
+  relativeLists :: String,
   index :: String
 }
 
 outputDirectories root = OutputDirectories {
   root=root,
   articles=root </> "articles",
+  relativeArticles="/articles/",
   images=root </> "images",
   relativeImages = "/images",
   lists=root </>  "list",
+  relativeLists="/lists/",
   index=root </> "index" <.> "html"
 }
