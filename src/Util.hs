@@ -9,6 +9,13 @@ if' :: Bool -> a -> a -> a
 if' True  x _ = x
 if' False _ y = y
 
+splitAt' _ [] = ([], [])
+splitAt' target (x:xs)
+  | x == target = ([], xs)
+  | otherwise = (x:follows, rest)
+  where
+    (follows, rest) = splitAt' target xs
+
 input :: IO String
 input = do
   c <- tryIOError getChar

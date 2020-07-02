@@ -9,9 +9,7 @@ import Paths
 import Templates (rewriteTemplates)
 import ConstantTemplates (constantRewrite, constantStaticTemplates)
 import ImageTemplates (transformImages, rewriteImageTemplates, ImageExpectation)
-import System.FSNotify
-import Control.Concurrent (threadDelay)
-import Control.Monad (forever)
+import ContentTemplate (rewriteContentTemplates)
 import System.FilePath
 import System.Environment
 import System.Exit
@@ -34,9 +32,10 @@ emitArticle output template total (index, filename) = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
 
   source <- readFile filename
-  let (source', imageExpectations) = rewriteImageTemplates (relativeImages output) source
+  let (source', _) = rewriteContentTemplates (relativeArticles output) (relativeLists output) source
+  let (source'', imageExpectations) = rewriteImageTemplates (relativeImages output) source'
   putStrLn $ "[" ++ (show (index + 1)) ++ "] dependencies: " ++ (show imageExpectations)
-  let (article, info) = transformArticle template source'
+  let (article, info) = transformArticle template source''
   let outfile = (articles output) </> titleToFilename (articleTitle info) <.> "html"
   writeFile outfile article
   return (info, imageExpectations)
@@ -61,7 +60,9 @@ writeList outputLists total (index, listname) listitems template itemTemplate = 
 
 templateBase output filename = do
   template <- readFile filename
-  return (rewriteImageTemplates (relativeImages output) template)
+  let (template', _) = rewriteContentTemplates (relativeArticles output) (relativeLists output) template
+  putStrLn template'
+  return (rewriteImageTemplates (relativeImages output) template')
 
 templateWithNav output navTemplate filename = do
   (template, imgs) <- templateBase output filename

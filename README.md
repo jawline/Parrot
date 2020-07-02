@@ -18,6 +18,16 @@ __NOTE:__ If the output directory does not exist Parrot will create it, but it w
 
 __NOTE:__ Parrot will re-use existing directories, which can cause file litter. It is best to create a fresh directory for builds.
 
+## Definitions
+
+- __Website Source__: The templates, articles, lists, images and static files used by Parrot to produce a static version of a website which can be hosted directly.
+- __Website Artifact__: The static website produced by Parrot when translating a website source. The artifact is the set of files which can be hosted directly without needing a dynamic web language like PHP or Django.
+- __Template String__: A special string of characters which will be replaced with corrosponding values as Parrot builds an artifact. These simplifying article generation, linking, and image management.
+
+## Creating New Articles
+
+[TODO]
+
 ## Design
 
 Parrot is an opinionated static website generation tool that builds a website
@@ -48,13 +58,16 @@ A parrot website is split up into four component folders:
 __NOTE:__ The list of lists is automatically generated from the articles, and
 is not manually curated.
 
-### Template Strings
+## Template Strings
 
-Content is substituted into templates and articles through template strings
-in the form `${{{string}}}`. Template strings can be constants, such as
-`${{{ARTICLE_CONTENT}}}` in the article template, or dynamic, such as
-`${{{img:expose.png}}}` which instructs Parrot to generate a web-optimized
-version of expose.png.
+Principally Parrot operates by systematically substituting template strings,
+constant or dynamic lookups from the website state, into templates in order to
+construct HTML webpages for all of the articles, and lists of the website, as
+well as the landing page. Content is substituted into templates and articles
+through template strings in the form `${{{string}}}`. Template strings can
+be constants, such as `${{{ARTICLE_CONTENT}}}` in the article template, or
+dynamic, such as `${{{img:expose.png}}}` which instructs Parrot to generate
+a web-optimized version of expose.png.
 
 #### Index Template
 
@@ -79,7 +92,7 @@ List templates form the skeleton of the article lists, which allow viewers to br
 The overall list template is responsible for the list page theme and the placement of list items within it. It supports the following template strings:
 - `NAV_BAR_CONTENT`: The content of the navigation bar.
 - `LIST_TITLE`: The title of the list being viewed.
-- `LIST_CONTENT`: Each item included in this list will be rendered into a list_item template and then included in the LIST_CONTENT.
+- `LIST_CONTENT`: Each item included in this list will be rendered into a list_item template and then included in the `LIST_CONTENT`.
 
 The list item is the skeleton HTML for a single entry into the list. It includes the following template strings:
 - `LI_NAME`: The name of the article being referenced.
@@ -89,12 +102,27 @@ The list item is the skeleton HTML for a single entry into the list. It includes
 
 #### Linking to lists
 
-TODO
+Template strings can be used to create links to lists, avoiding the need
+for embedding absolute paths which may change. To use a template string to
+refer to a link use `${{{list:list_name}}}` in either a template or article
+and it will be automatically resolved to a relative link to that list in the
+website artifact. To use this in a markdown article you would use a markdown
+link, for example `[Click here to find out more](${{{list:mylist}}})`. When
+embedding a link in a HTML fragment, such as a template, you would use an
+`<a>` tag, for example `<a href="${{{link:mylist}}}">click here for more!</a>`.
 
 #### Linking to articles
 
-TODO
+Like lists, articles can be referenced in content using template strings. The
+template string format for articles is `${{{article:Article Title}}}` and
+these templates can be used in the same places as list template strings.
 
 #### Images, Image Templating, and Resizing
 
-TODO
+Parrot can automatically images requested through template strings to desired sizes while building a website. Image template strings come in the form `${{{img:image_name.filetype}}}` and the image is expected to be in a subdirectory of the `images/` path of the source site.
+
+By default, images will be resized to the high resolution setting of Parrot, but this can be overwritten in the image template string. These are the possible overrides:
+- `${{{img:filename.filetype}}}`: Use the Parrot default (generally high).
+- `${{{img:filename.filetype:original}}}`: keep the current image settings.
+- `${{{img:filename.filetype:high}}}`: Use the high quality Parrot setting.
+- `${{{img:filename.filetype:thumb}}}`: Use the thumbnail parrot setting.
