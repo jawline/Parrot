@@ -3,7 +3,7 @@ import System.FilePath
 import System.Directory
 import Data.Char (toLower)
 import Graphics.Image
-import Util (dedup, if')
+import Util (dedup, if', splitAt')
 import Templates (rewriteTemplates, defaultExtractTemplateString)
 
 -- Data type represents the possible transformations for a source image.
@@ -43,10 +43,11 @@ toFloating (a, b) = (fromIntegral a, fromIntegral b)
 
 minArea (w1, h1) (w2, h2) = if' ((w1 * h1) > (w2 * h2)) (w2, h2) (w1, h1)
 
-makeLargestDimension x dims = minArea scaledWidth scaledHeight
+-- Make the largest edge of dims be maxEdge wide
+makeLargestEdge maxEdge dims = minArea scaledWidth scaledHeight
   where
-    scaledWidth = decideShape dims (ScaledToWidth x)
-    scaledHeight = decideShape dims (ScaledToHeight x)
+    scaledWidth = decideShape dims (ScaledToWidth maxEdge)
+    scaledHeight = decideShape dims (ScaledToHeight maxEdge)
 
 -- Given the current dimensions and the expected shape calculate the new dimensions
 decideShape (a, b) (Fixed x y) = (x, y)
@@ -58,8 +59,8 @@ decideShape (a, b) (ScaledToWidth x) = scaleBy (a, b) scalar
 decideShape (a, b) (ScaledToHeight x) = scaleBy (a, b) scalar
   where
     scalar = x / (fromIntegral b)
-decideShape dims QualityThumb = makeLargestDimension 100 dims
-decideShape dims QualityHigh = makeLargestDimension 300 dims
+decideShape dims QualityThumb = makeLargestEdge 100 dims
+decideShape dims QualityHigh = makeLargestEdge 300 dims
 
 -- Transforms a given file expectation (and source file) to a output image
 transformExpectation :: FilePath -> FilePath -> ImageExpectation -> IO ()
@@ -77,16 +78,36 @@ transformImages imageSource imageDest expectations = do
   mapM_ (\x -> transformExpectation imageSource imageDest x) (dedup expectations)
   return ()
 
+-- If the string is at the start of an image template string then return the start of the image template string content
+-- I.e, if ${{{img:hello} return hello}
+-- Return Nothing if not the start of an image template string
+imgTemplateStart :: String -> Maybe String
 imgTemplateStart ('$':'{':'{':'{':'i':'m':'g':':':xs) = Just xs
 imgTemplateStart _ = Nothing
 
+-- Separate the name and extension of the target image
+nameAndType :: String -> (String, String)
 nameAndType filePath = (dropExtension filePath, takeExtension filePath)
 
-imgTemplateRewriter :: String -> String -> Maybe (String, [ImageExpectation])
-imgTemplateRewriter hostedImagesPath templateString = Just (hostedImagesPath </> (imageExpectationFilename expectation), [expectation])
+-- Rewrite a file path and expected size into an image expectation
+imgTemplateRewriteBase hostedImagesPath filepath size = Just (localPath, [expectation])
   where
-    (name, fileType) = nameAndType templateString
-    expectation = ImageExpectation { name=name, fileType=fileType, size=QualityHigh }
+    (name, fileType) = nameAndType filepath
+    expectation = ImageExpectation { name=name, fileType=fileType, size=size }
+    localPath = hostedImagesPath </> (imageExpectationFilename expectation)
 
+-- If "original" or "thumb" select those sizes otherwise default to High
+matchStrToFilesize "original" = Original
+matchStrToFilesize "thumb" = QualityThumb
+matchStrToFilesize _ = QualityHigh
+
+-- Rewrite an image template string into a hosted image path (like /images/file.png) and an image expectation for the image processor
+imgTemplateRewriter :: String -> String -> Maybe (String, [ImageExpectation])
+imgTemplateRewriter hostedImagesPath templateString =
+  imgTemplateRewriteBase hostedImagesPath namePart (matchStrToFilesize sizePart)
+  where
+    (namePart, sizePart) = splitAt' ':' templateString
+
+-- Rewrite all of the image templates in a source and return a list of image expectations for later processing
 rewriteImageTemplates :: String -> String -> (String, [ImageExpectation])
 rewriteImageTemplates hostedImagesPath source = rewriteTemplates imgTemplateStart defaultExtractTemplateString (imgTemplateRewriter hostedImagesPath) source

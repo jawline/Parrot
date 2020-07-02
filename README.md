@@ -20,7 +20,9 @@ __NOTE:__ Parrot will re-use existing directories, which can cause file litter. 
 
 ## Definitions
 
-[TODO]
+- __Website Source__: The templates, articles, lists, images and static files used by Parrot to produce a static version of a website which can be hosted directly.
+- __Website Artifact__: The static website produced by Parrot when translating a website source. The artifact is the set of files which can be hosted directly without needing a dynamic web language like PHP or Django.
+- __Template String__: A special string of characters which will be replaced with corrosponding values as Parrot builds an artifact. These simplifying article generation, linking, and image management.
 
 ## Creating New Articles
 
@@ -100,17 +102,27 @@ The list item is the skeleton HTML for a single entry into the list. It includes
 
 #### Linking to lists
 
-[TODO]
+Template strings can be used to create links to lists, avoiding the need
+for embedding absolute paths which may change. To use a template string to
+refer to a link use `${{{list:list_name}}}` in either a template or article
+and it will be automatically resolved to a relative link to that list in the
+website artifact. To use this in a markdown article you would use a markdown
+link, for example `[Click here to find out more](${{{list:mylist}}})`. When
+embedding a link in a HTML fragment, such as a template, you would use an
+`<a>` tag, for example `<a href="${{{link:mylist}}}">click here for more!</a>`.
 
 #### Linking to articles
 
-[TODO]
+Like lists, articles can be referenced in content using template strings. The
+template string format for articles is `${{{article:Article Title}}}` and
+these templates can be used in the same places as list template strings.
 
 #### Images, Image Templating, and Resizing
 
 Parrot can automatically images requested through template strings to desired sizes while building a website. Image template strings come in the form `${{{img:image_name.filetype}}}` and the image is expected to be in a subdirectory of the `images/` path of the source site.
 
 By default, images will be resized to the high resolution setting of Parrot, but this can be overwritten in the image template string. These are the possible overrides:
+- `${{{img:filename.filetype}}}`: Use the Parrot default (generally high).
 - `${{{img:filename.filetype:original}}}`: keep the current image settings.
 - `${{{img:filename.filetype:high}}}`: Use the high quality Parrot setting.
 - `${{{img:filename.filetype:thumb}}}`: Use the thumbnail parrot setting.
