@@ -26,10 +26,15 @@ input = do
     Left(_) ->
       return []
 
-showTime :: Float -> String
-showTime r = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
-  where t = round r
-        timestamp = posixSecondsToUTCTime $ (fromInteger t)
+-- If the time string at the top of an article is in epoch time we convert it to a d-m-Y string
+-- Otherwise, we leave it as is and print it directly into the article
+showTime :: String -> String
+showTime timeStr
+  | all isDigit timeStr = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
+  | otherwise = timeStr
+  where timeFloat = read timeStr :: Float
+        truncMilli = round timeFloat
+        timestamp = posixSecondsToUTCTime $ fromInteger truncMilli
 
 endOfLine :: String -> String
 endOfLine [] = []
