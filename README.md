@@ -26,7 +26,13 @@ __NOTE:__ Parrot will re-use existing directories, which can cause file litter. 
 
 ## Creating New Articles
 
-[TODO]
+Creating new articles can be a hassle because we embed article metadata
+directly into the markdown articles. To reduce the overhead involved
+in creating new well-formed article we provide the __ParrotMake__
+utility. __ParrotMake__ takes a file path and creates a new article markdown
+template with relevent metadata the current system date.
+
+To create a new 'Hello World' article in our example site, we first run `cabal run ParrotMake -- examples/sample_site/articles/hello_world.md`, which will create the new markdown file. Next, we edit the generated file to have a more useful title, and some tags (lists) to which it belongs. We also give it a description and some content. The next time Parrot is executed our website artifact will include the new 'Hello World' article.
 
 ## Design
 

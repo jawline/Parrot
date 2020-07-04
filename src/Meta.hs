@@ -7,8 +7,8 @@ extractTitle source = trim (drop (length prelude) (findLine prelude source))
   where
     prelude = "!=!=! Title:"
 
-extractDate :: String -> Float
-extractDate source = read (trim (drop (length prelude) (findLine prelude source))) :: Float
+extractDate :: String -> String
+extractDate source = trim (drop (length prelude) (findLine prelude source))
   where
     prelude = "!=!=! Created:"
 
@@ -39,7 +39,7 @@ mergeTags tags = foldr mergeTag "" tags
 data ArticleInfo = ArticleInfo {
   articleTitle :: String,
   articleIntro :: String,
-  articleDate :: Float,
+  articleDate :: String,
   articleTags :: [String],
   articleImages :: [ImageExpectation]
 }
