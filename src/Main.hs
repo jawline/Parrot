@@ -29,15 +29,15 @@ rewriteSuffix source = replaceInString source (".md",".html")
 
 emitArticle :: OutputDirectories -> String -> Int -> (Int, FilePath) -> IO (ArticleInfo, [ImageExpectation])
 emitArticle output template total (index, filename) = do
-  putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename)
 
   source <- readFile filename
   let (source', _) = rewriteContentTemplates (relativeArticles output) (relativeLists output) source
   let (source'', imageExpectations) = rewriteImageTemplates (relativeImages output) source'
-  putStrLn $ "[" ++ (show (index + 1)) ++ "] dependencies: " ++ (show imageExpectations)
   let (article, info) = transformArticle template source''
   let outfile = (articles output) </> titleToFilename (articleTitle info) <.> "html"
   writeFile outfile article
+
+  putStrLn $ "[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ filename ++ " dependencies: " ++ (show imageExpectations)
   return (info, imageExpectations)
 
 setupDirectory output = do
@@ -61,7 +61,6 @@ writeList outputLists total (index, listname) listitems template itemTemplate = 
 templateBase output filename = do
   template <- readFile filename
   let (template', _) = rewriteContentTemplates (relativeArticles output) (relativeLists output) template
-  putStrLn template'
   return (rewriteImageTemplates (relativeImages output) template')
 
 templateWithNav output navTemplate filename = do

@@ -1,4 +1,4 @@
-import System.FSNotify (withManager, watchTree)
+import System.FSNotify (withManager, watchTree, Event(Modified))
 import System.Environment (getArgs)
 import Control.Concurrent (threadDelay)
 import Control.Monad (forever, when)
@@ -10,20 +10,27 @@ executeParrot input output = do
   system ("cabal run Parrot -- " ++ input ++ " " ++ output)
   return ()
 
+-- Event callback for FSNotify watcher
+-- Triggers only when files are Modified
+triggerTransform transformer event |
+  Modified _ _ _  <- event = do
+    transformer
+    putStrLn ("[+] Transform because of change to " ++ (show event))
+    return ()
+  | otherwise = do
+    putStrLn ("[+] " ++ (show event) ++ " does not trigger rebuild")
+    return ()
+
 -- Repeatedly watches input or ./src/ and runs the transformer whenever files change.
 watchJob transformer input output =
   withManager $ \mgr -> do
     putStrLn ("[+] Watching for changes on: " ++ input)
-    watchTree mgr input alwaysTrigger triggerTransform
-    watchTree mgr "src" alwaysTrigger triggerTransform
+    watchTree mgr input alwaysTrigger triggerTransform'
+    watchTree mgr "src" alwaysTrigger triggerTransform'
     forever $ threadDelay 1000000
   where
     alwaysTrigger _ = True
-    triggerTransform event = do
-      putStrLn ("[+] Need to transform because of " ++ (show event))
-      transformer
-      putStrLn ("[+] Transform because of change to " ++ (show event))
-      return ()
+    triggerTransform' = triggerTransform transformer
 
 -- When the watcher is not called with the right number of arguments complain
 failArguments = do
