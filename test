@@ -1,0 +1,6 @@
+Build profile: -w ghc-8.8.3 -O1
+In order, the following will be built (use -v for more details):
+ - Parrot-0.1.0.0 (exe:ParrotMake) (file src/ParrotMk.hs changed)
+Preprocessing executable 'ParrotMake' for Parrot-0.1.0.0..
+Building executable 'ParrotMake' for Parrot-0.1.0.0..
+[3 of 3] Compiling Main             ( src/ParrotMk.hs, /home/blake/Parrot/dist-newstyle/build/x86_64-linux/ghc-8.8.3/Parrot-0.1.0.0/x/ParrotMake/build/ParrotMake/ParrotMake-tmp/Main.o )
