@@ -1,12 +1,12 @@
 # Parrot
 
 Markdown to HTML templating engine written entirely in Haskell. This tool
-will take a template website and a series of markdown articles and produce
+will take a template website as well as a series of markdown articles and uses them to produce
 a static artifact which can be deployed on a web server. [For an example, my website was created using this tool](https://parsed.dev).
 
 ## Dependencies
 
-We use HIP for image processing, which requires zlib and zlib.h to be installed. `apt install zlib1g-dev` on Ubuntu.
+Parrot uses the `GHC` Haskell compiler and it's accompanying `cabal` dependency managment software to handle compilation and dependencies. The quickest way to get these tools into a usable state is with `ghcup`, which is [available here](https://www.haskell.org/ghcup/). We use HIP for image processing, which requires zlib and zlib.h to be installed (`apt install zlib1g-dev` on Ubuntu).
 
 ## Getting Started
 
