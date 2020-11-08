@@ -1,0 +1,21 @@
+name:                Tools
+version:             0.1.0.0
+-- synopsis:
+-- description:
+license:             BSD3
+license-file:        LICENSE
+author:              Blake Loring
+maintainer:          blake@parsed.uk
+-- copyright:
+category:            Development
+build-type:          Simple
+extra-source-files:  CHANGELOG.md
+cabal-version:       >=1.10
+
+executable NewArticle
+  main-is:             Main.hs
+  build-depends: base, raw-strings-qq, time, filepath
+  -- other-modules:
+  -- other-extensions:
+  hs-source-dirs:      src
+  default-language:    Haskell2010
