@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+PATH_TO_ARTICLE=$(realpath $1)
+(cd Core && cabal run ParrotMake -- $PATH_TO_ARTICLE)

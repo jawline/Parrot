@@ -4,6 +4,7 @@ import Control.Concurrent (threadDelay)
 import Control.Monad (forever, when)
 import System.Exit (exitWith, ExitCode(ExitFailure))
 import System.Process (system)
+import System.Directory (setCurrentDirectory)
 
 -- Triggers cabal to recompile on change and then re-run the website builder.
 executeParrot input output = do
@@ -34,7 +35,7 @@ watchJob transformer input output =
 
 -- When the watcher is not called with the right number of arguments complain
 failArguments = do
-  putStrLn "Usage: executable SOURCE_DIR OUTPUT"
+  putStrLn "Usage: executable CORE_DIR SOURCE_DIR OUTPUT"
   exitWith (ExitFailure 1)
 
 {-|
@@ -47,10 +48,18 @@ failArguments = do
 main = do
   programArguments <- getArgs
 
-  when (length programArguments /= 2) $ failArguments
+  -- Exit if we do not have three arguments
+  when (length programArguments /= 3) $ failArguments
 
-  let input = programArguments !! 0
-  let output = programArguments !! 1
+  -- We take three arguments, the directory of Parrot's core, the directory of the website source
+  -- and the output directory to write changes to
+  let coreDirectory = programArguments !! 0
+  let input = programArguments !! 1
+  let output = programArguments !! 2
+
+  -- We change the working directory to the first directory supplied
+  _ <- setCurrentDirectory coreDirectory
+
   let exec = executeParrot input output
 
   _ <- exec

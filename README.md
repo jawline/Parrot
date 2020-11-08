@@ -10,9 +10,7 @@ Parrot uses the `GHC` Haskell compiler and it's accompanying `cabal` dependency 
 
 ## Getting Started
 
-To build the included sample website execute: `cabal run Parrot -- ./examples/sample_site/ ./out/` where ./out/ is the directory that should include the built website.
-
-To automatically rebuild the website whenever a source file or Parrot's source code changes use: `cabal run ParrotWatch -- ./examples/sample_site ./out/'
+To build the included sample website execute: `./build_a_website ./examples/sample_site/ ./out/` where ./out/ is the directory that should include the built website. Parrot will now watch the website source directory and rebuild the website whenever the source files change.
 
 __NOTE:__ If the output directory does not exist Parrot will create it, but it will not create the directory recursively. For example, given an empty directory `/var/`, `cabal run Parrot -- source/ /var/html` will work correctly but `cabal run Parrot -- source/ /var/html/www/` will not.
 
@@ -32,7 +30,7 @@ in creating new well-formed article we provide the __ParrotMake__
 utility. __ParrotMake__ takes a file path and creates a new article markdown
 template with relevent metadata the current system date.
 
-To create a new 'Hello World' article in our example site, we first run `cabal run ParrotMake -- examples/sample_site/articles/hello_world.md`, which will create the new markdown file. Next, we edit the generated file to have a more useful title, and some tags (lists) to which it belongs. We also give it a description and some content. The next time Parrot is executed our website artifact will include the new 'Hello World' article.
+To create a new 'Hello World' article in our example site, we first run `./new_article examples/sample_site/articles/hello_world.md`, which will create the new markdown file. Next, we edit the generated file to have a more useful title, and some tags (lists) to which it belongs. We also give it a description and some content. The next time Parrot is executed our website artifact will include the new 'Hello World' article.
 
 ## Design
 

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+INPUT=$(realpath "$1")
+OUTPUT=$(realpath "$2")
+(cd Watch && cabal run -- ../Core "$INPUT" "$OUTPUT")

@@ -26,13 +26,22 @@ input = do
     Left(_) ->
       return []
 
+-- Some time strings include a floating point (they include milliseconds)
+-- Truncate that time string to a integer
+truncateStringAt :: Char -> String -> String
+truncateStringAt _ [] = []
+truncateStringAt delim (x:xs)
+  | delim == x = []
+  | otherwise = x:(truncateStringAt delim xs)
+
 -- If the time string at the top of an article is in epoch time we convert it to a d-m-Y string
 -- Otherwise, we leave it as is and print it directly into the article
 showTime :: String -> String
 showTime timeStr
-  | all isDigit timeStr = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
+  | all isDigit truncatedTimeStr = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
   | otherwise = timeStr
-  where timeFloat = read timeStr :: Float
+  where truncatedTimeStr = truncateStringAt '.' timeStr
+        timeFloat = read truncatedTimeStr :: Float
         truncMilli = round timeFloat
         timestamp = posixSecondsToUTCTime $ fromInteger truncMilli
 
