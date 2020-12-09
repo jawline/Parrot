@@ -16,6 +16,9 @@ splitAt' target (x:xs)
   where
     (follows, rest) = splitAt' target xs
 
+{-|
+ Read all of input from stdin
+-}
 input :: IO String
 input = do
   c <- tryIOError getChar
@@ -26,16 +29,20 @@ input = do
     Left(_) ->
       return []
 
--- Some time strings include a floating point (they include milliseconds)
--- Truncate that time string to a integer
+{-|
+ Some time strings include a floating point (they include milliseconds)
+ Truncate that time string to a integer
+-}
 truncateStringAt :: Char -> String -> String
 truncateStringAt _ [] = []
 truncateStringAt delim (x:xs)
   | delim == x = []
   | otherwise = x:(truncateStringAt delim xs)
 
--- If the time string at the top of an article is in epoch time we convert it to a d-m-Y string
--- Otherwise, we leave it as is and print it directly into the article
+{-|
+ If the time string at the top of an article is in epoch time we convert it to a d-m-Y string
+ Otherwise, we leave it as is and print it directly into the article
+-}
 showTime :: String -> String
 showTime timeStr
   | all isDigit truncatedTimeStr = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
@@ -56,9 +63,9 @@ matches target string = take (length target) string == target
 type StringReplacer = (String, String)
 
 {-|
-  Replace a target string with another in the source string
-  Arguments: source target replaceWith
--}
+ - Replace a target string with another in the source string
+ - Arguments: source target replaceWith
+ -}
 replaceInString :: String -> StringReplacer -> String
 replaceInString [] _ = []
 replaceInString (x:xs) (target,with)
