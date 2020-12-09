@@ -48,12 +48,14 @@ writeListReplacers title content = [
   (constantRewrite "LIST_TITLE" title),
   (constantRewrite "LIST_CONTENT" content)]
 
+articleTime article = asUTCTime (articleDate article)
+
 writeList :: String -> Int -> (Int, String) -> [ArticleInfo] -> String -> String -> IO ()
 writeList outputLists total (index, listname) listitems template itemTemplate = do
   putStrLn ("[" ++ (show (index + 1)) ++ " of " ++ (show total) ++ "] " ++ listname)
   writeFile (outputLists </> listname <.> ".html") rewritten
     where
-      sortedItems = reverse (sortOn articleDate listitems)
+      sortedItems = reverse (sortOn articleTime listitems)
       formattedItems = map (transformListItem itemTemplate) sortedItems
       replacers = writeListReplacers listname (foldr (++) "" formattedItems)
       rewritten = constantStaticTemplates replacers template

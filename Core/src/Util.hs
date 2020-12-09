@@ -40,17 +40,23 @@ truncateStringAt delim (x:xs)
   | otherwise = x:(truncateStringAt delim xs)
 
 {-|
- If the time string at the top of an article is in epoch time we convert it to a d-m-Y string
- Otherwise, we leave it as is and print it directly into the article
--}
-showTime :: String -> String
-showTime timeStr
-  | all isDigit truncatedTimeStr = formatTime defaultTimeLocale "%d-%m-%Y" timestamp
-  | otherwise = timeStr
+ - If convert the article time string to epoch time (since it may be either epoch time or a date string)
+ -}
+asUTCTime :: String -> UTCTime
+asUTCTime timeStr
+  | all isDigit truncatedTimeStr = timestamp 
+  | otherwise = parseTimeOrError True defaultTimeLocale "%d-%m-%Y" timeStr
   where truncatedTimeStr = truncateStringAt '.' timeStr
         timeFloat = read truncatedTimeStr :: Float
         truncMilli = round timeFloat
         timestamp = posixSecondsToUTCTime $ fromInteger truncMilli
+
+{-|
+ If the time string at the top of an article is in epoch time we convert it to a d-m-Y string
+ Otherwise, we leave it as is and print it directly into the article
+-}
+showTime :: String -> String
+showTime timeStr = formatTime defaultTimeLocale "%d-%m-%Y" (asUTCTime timeStr)
 
 endOfLine :: String -> String
 endOfLine [] = []
