@@ -50,6 +50,7 @@ makeLargestEdge maxEdge dims = minArea scaledWidth scaledHeight
     scaledHeight = decideShape dims (ScaledToHeight maxEdge)
 
 -- Given the current dimensions and the expected shape calculate the new dimensions
+decideShape dims Original = dims
 decideShape (a, b) (Fixed x y) = (x, y)
 decideShape (a, b) (Scaled x) = roundDims (a' * x, b' * x)
   where (a', b') = toFloating (a, b)
