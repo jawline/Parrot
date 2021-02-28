@@ -16,7 +16,7 @@ transformInlineCode xs
   | (x:xs) <- xs,
     isInlineCodeStart x,
     Just (line, remaining) <- transformInlineCodeInt xs
-  = Just ("<span><code>" ++ line ++ "</code></span>", remaining)
+  = Just ("<code>" ++ line ++ "</code>", remaining)
   | otherwise = Nothing
 
 isCodeEnd :: String -> Bool
@@ -25,5 +25,5 @@ isCodeEnd _ = False
 
 transformMultilineCode :: String -> (String, String)
 transformMultilineCode xs = case readToNext xs isCodeEnd of
-  Just (code, rest) -> ("<pre><code>" ++ (trim code) ++ "</code></pre>", drop 3 rest)
+  Just (code, rest) -> ("<pre><code>" ++ (urlEncode (trim code)) ++ "</code></pre>", drop 3 rest)
   Nothing -> error "No end to multiline block"

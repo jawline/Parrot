@@ -4,6 +4,7 @@ import System.IO.Error (tryIOError)
 import Data.Time.Clock.POSIX
 import Data.Time.Clock
 import Data.Time.Format
+import Text.Printf
 
 if' :: Bool -> a -> a -> a
 if' True  x _ = x
@@ -15,6 +16,19 @@ splitAt' target (x:xs)
   | otherwise = (x:follows, rest)
   where
     (follows, rest) = splitAt' target xs
+
+urlEncodeChar :: Char -> String
+urlEncodeChar x = printf "&#%04i;" (ord x)
+
+shouldEncode :: Char -> Bool
+shouldEncode '<' = True
+shouldEncode '>' = True
+shouldEncode _ = False
+
+urlEncode [] = []
+urlEncode (x:xs)
+  | shouldEncode x = (urlEncodeChar x) ++ (urlEncode xs)
+  | otherwise = x:(urlEncode xs)
 
 {-|
  Read all of input from stdin
